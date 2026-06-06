@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Apartio</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <Configurations>Debug;Release;Mikro;Logo</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Allegory.Standart.Filter" Version="1.0.6" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.70" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Volo.Abp.Identity.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.AuditLogging.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Domain.Shared" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.OpenIddict.Domain.Shared" Version="8.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Apartio\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.4" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
+  </ItemGroup>
+
+</Project>

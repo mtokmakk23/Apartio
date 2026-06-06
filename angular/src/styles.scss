@@ -1,0 +1,219 @@
+/* You can add global styles to this file, and also import other style files */
+.ng-dropdown-panel {
+  z-index: 2000 !important; /* modal 1055 olduğu için daha yüksek verdik */
+}
+  .fullscreen-modal{
+    max-width: 100% !important;
+
+  }
+   .screen-modal75{
+      max-width: 75% !important;
+    }
+@keyframes donut-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+:root {
+  --lpx-logo: url('/assets/images/logo/logo-light.png');
+  --lpx-logo-icon: url('/assets/images/logo/logo-light-thumbnail.png');
+}
+.donut {
+  display: inline-block;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #7983ff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: donut-spin 1.2s linear infinite;
+
+  &.centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.abp-logo {
+  background-repeat: no-repeat;
+}
+
+.abp-support {
+  width: 178px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-support.svg');
+}
+
+.abp-community {
+  width: 215px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-community.svg');
+}
+
+.abp-blog {
+  width: 142px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-blog.svg');
+}
+
+.logo-x {
+  width: 20px;
+  height: 20px;
+  background-image: url('/assets/images/getting-started/x.svg');
+}
+
+
+  /* Sayfalama konteyneri */
+ .p-paginator {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     margin-bottom: 3px;
+     margin-top: 2px;
+ }
+ 
+ /* Sayfa numaraları */
+ .p-paginator .p-paginator-page {
+     margin: 0 1px;
+     cursor: pointer;
+     padding: 4px 15px;
+     border-radius: 5px;
+ }
+ /* Sayfalama düğmeleri üzerine gelindiğinde */
+ .p-paginator .p-paginator-page:hover,
+ .p-paginator .p-paginator-first:hover,
+ .p-paginator .p-paginator-last:hover,
+ .p-paginator .p-paginator-prev:hover,
+ .p-paginator .p-paginator-next:hover {
+     background-color: #e9e9e9; /* Hover durumu arka plan rengi */
+ }
+ /* Seçili sayfa */
+ .p-paginator .p-paginator-page.p-highlight {
+     background-color: #007ad9; /* Seçili sayfanın arka plan rengi */
+     color: white; /* Seçili sayfanın yazı rengi */
+ }
+ 
+ /* Önceki ve sonraki düğmeler */
+ .p-paginator .p-paginator-last,
+ .p-paginator .p-paginator-first,
+ .p-paginator .p-paginator-prev,
+ .p-paginator .p-paginator-next {
+     margin: 0 5px;
+     cursor: pointer;
+     padding: 7px 15px;
+     border-radius: 5px;
+ }
+ 
+ /* Sayfa sayısı girdisi */
+ .p-paginator .p-paginator-current {
+     margin: 0 5px;
+ }
+.p-paginator-rpp-options{
+  padding: 5px;
+  border: 1px solid #eee;
+}
+
+/* Ana kutu */
+.p-multiselect {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 4px;
+    background: #fff;
+}
+
+/* Hover + focus */
+.p-multiselect:hover {
+    border-color: #6366f1;
+}
+
+.p-multiselect.p-focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Label */
+.p-multiselect-label {
+    padding: 6px 10px;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Placeholder */
+.p-multiselect-label.p-placeholder {
+    color: #9ca3af;
+}
+
+/* Dropdown icon */
+.p-multiselect-trigger {
+    color: #6b7280;
+}
+
+/* Panel */
+.p-multiselect-panel {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    padding: 6px;
+    background-color: white;
+}
+
+/* Item */
+.p-multiselect-items {
+    padding: 0;
+    min-width: 100px;
+}
+.p-multiselect-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin: 2px 0;
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+/* Hover */
+.p-multiselect-item:hover {
+    background: #f3f4f6;
+}
+
+/* Selected */
+.p-multiselect-item.p-highlight {
+    background: #6366f1;
+    color: #fff;
+}
+
+/* Checkbox daha modern */
+.p-checkbox .p-checkbox-box {
+    border-radius: 5px;
+    border: 1.5px solid #d1d5db;
+    width: 15px;
+    height: 15px;
+    margin-right: 2px;
+}
+
+/* Checkbox seçili */
+.p-checkbox .p-checkbox-box.p-highlight {
+    background: #6366f1;
+    border-color: #6366f1;
+}
+.p-multiselect-filter{
+  border:1px solid #dedede;
+  min-width: 150px;
+  border-radius:3px;
+  height: 30px;
+}
+/* Chip (seçilenler üstte görünüyorsa) */
+.p-multiselect-token {
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+searchicon{
+  display: none;
+}

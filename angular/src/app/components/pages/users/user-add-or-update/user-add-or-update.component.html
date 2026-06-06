@@ -1,0 +1,191 @@
+<div class="card">
+  <div class="card-body p-3">
+    <ul
+      ngbNav
+      #Border="ngbNav"
+      [activeId]="1"
+      class="nav nav-tabs nav-border-top nav-border-top-primary mb-3"
+    >
+      <li [ngbNavItem]="1">
+        <a ngbNavLink> Kullanıcı Bilgileri </a>
+        <ng-template ngbNavContent>
+          <div class="form-group" *ngIf="currentUserInfoService.isAdmin">
+            <div class="form-check form-switch form-check-success">
+              <input
+                class="form-check-input"
+                [(ngModel)]="user.extraProperties.IsAdmin"
+                type="checkbox"
+                role="switch"
+                id="flexSwitchCheckDefault2"
+              />
+              <label class="form-check-label" for="flexSwitchCheckDefault2">
+                Admin Mi?</label
+              >
+            </div>
+          </div>
+          <div class="form-group" *ngIf="currentUserInfoService.isAdmin && !user.extraProperties.IsAdmin">
+            <div class="mb-3">
+              <label for="choices-single-default" class="form-label">Müşteri</label>
+
+              <ng-select
+                [items]="customers"
+                bindLabel="title"
+                bindValue="no"
+                [(ngModel)]="user.extraProperties.CustomerNo"
+              >
+                <ng-template ng-option-tmp let-item="item">
+                  <b>{{ item.no }}</b> - {{ item.title }}
+                </ng-template>
+              </ng-select>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-md-12">
+              <label>Kullanıcı Adı *</label>
+              <input
+                required
+                class="form-control"
+                (focus)="(user.userName == null)"
+                type="text"
+                style="width: 100%"
+                tabindex="0"
+                [(ngModel)]="user.userName"
+              />
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-md-6">
+              <label>Adı</label>
+              <input
+                class="form-control"
+                type="text"
+                style="width: 100%"
+                tabindex="1"
+                [(ngModel)]="user.name"
+              />
+            </div>
+            <div class="col-md-6">
+              <label>Soyadı</label>
+              <input
+                class="form-control"
+                type="text"
+                style="width: 100%"
+                tabindex="2"
+                [(ngModel)]="user.surname"
+              />
+            </div>
+          </div>
+          <div class="form-group" *ngIf="this.data.id == null">
+            <div class="col-md-12">
+              <label>Şifre *</label>
+              <input
+                required
+                class="form-control"
+                (focus)="(user.password == null)"
+                type="text"
+                style="width: 100%"
+                tabindex="0"
+                [(ngModel)]="user.password"
+              />
+            </div>
+          </div>
+          <div class="form-group" *ngIf="this.data.id != null">
+            <div class="col-md-12">
+              <label>Yeni Şifre</label>
+              <input
+                class="form-control"
+                (focus)="(false)"
+                type="text"
+                style="width: 100%"
+                tabindex="0"
+                placeholder="Şifre değiştirmek istiyorsanız giriniz"
+                [(ngModel)]="user.password"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-md-12">
+              <label>E Posta Adresi *</label>
+              <input
+                required
+                class="form-control"
+                (focus)="(user.email == null)"
+                type="email"
+                style="width: 100%"
+                tabindex="0"
+                [(ngModel)]="user.email"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-md-12">
+              <label>Telefon Numarası</label>
+              <input
+                class="form-control"
+                type="tel"
+                style="width: 100%"
+                tabindex="3"
+                [(ngModel)]="user.phoneNumber"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-check form-switch form-check-success">
+              <input
+                class="form-check-input"
+                [(ngModel)]="user.isActive"
+                type="checkbox"
+                role="switch"
+                id="flexSwitchCheckDefault"
+              />
+              <label class="form-check-label" for="flexSwitchCheckDefault">Aktif</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-check form-switch form-check-success">
+              <input
+                class="form-check-input"
+                [(ngModel)]="user.lockoutEnabled"
+                type="checkbox"
+                role="switch"
+                id="flexSwitchCheckDefault2"
+              />
+              <label class="form-check-label" for="flexSwitchCheckDefault2">
+                Başarısız giriş denemeleri sonrası hesabı kitleme</label
+              >
+            </div>
+          </div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="2" *ngIf="currentUserInfoService.isAdmin">
+        <a ngbNavLink> Roller </a>
+        <ng-template ngbNavContent>
+          <div *ngFor="let role of roles">
+            <div class="form-check form-check-danger mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="{{ role.id }}"
+                (change)="changeUserRoles(role.id)"
+                [(ngModel)]="role.isChecked"
+              />
+              <label class="form-check-label" for="{{ role.id }}">
+                {{ role.name }}
+              </label>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+    <div [ngbNavOutlet]="Border"></div>
+    <div class="text-center">
+      <button
+        type="button"
+        class="btn btn-primary btn-small m-auto waves-effect waves-light"
+        (click)="addOrUpdateUser()"
+      >
+        KAYDET
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Apartio</RootNamespace>
+    <Configurations>Debug;Release;Mikro;Logo</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Apartio.Application.Contracts\Apartio.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Allegory.Standart.Filter" Version="1.0.6" />
+    <PackageReference Include="Volo.Abp.Account.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.Identity.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.TenantManagement.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.SettingManagement.HttpApi.Client" Version="8.3.2" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="**\*generate-proxy.json" />
+    <Content Remove="**\*generate-proxy.json" />
+  </ItemGroup>
+
+</Project>

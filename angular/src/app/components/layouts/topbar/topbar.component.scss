@@ -1,0 +1,57 @@
+.mobile{
+  display:none;
+}
+
+.desktop{
+  display:block;
+}
+
+@media (max-width: 767px){
+  .mobile{
+    display:block;
+  }
+
+  .desktop{
+    display:none;
+  }
+}
+.cart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .cart-icon {
+    font-size: 3rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+  
+  .cart-icon.shake {
+    animation: bounce-scale 0.7s ease;
+    color: #015eb4; /* Animasyon sırasında renk değişimi */
+  }
+
+
+  @keyframes bounce-scale {
+    0% {
+      transform: scale(3) ;
+    }
+    25% {
+      transform: scale(4) ;
+    }
+    50% {
+      transform: scale(4.5) rotate(30deg);
+      transform: scale(4.5) rotate(-30deg);
+    }
+    75% {
+      transform: scale(4) ;
+    }
+    100% {
+      transform: scale(3) ;
+    }
+
+    
+     
+     
+  }

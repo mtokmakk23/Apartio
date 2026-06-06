@@ -1,0 +1,43 @@
+{
+  "culture": "tr",
+  "texts": {
+    "AppName": "Apartio",
+    "Menu:Home": "Ana sayfa",
+    "Welcome": "Hoşgeldiniz",
+    "LongWelcomeMessage": "Uygulamaya hoşgeldiniz. Bu, ABP framework'ü üzerine bina edilmiş bir başlangıç projesidir. Daha fazla bilgi için abp.io adresini ziyaret edebilirsiniz.",
+    "AdminPermGroup": "Admin Yetkiler",
+    "AdminPermGroup:Customer": "Müşteriler",
+    "AdminPermGroup:CustomerAllPermission": "Müşteri Sayfasına Yetkili",
+    "AdminPermGroup:AdminPriceList": "Fiyat Listesi",
+    "AdminPermGroup:UserAdmin": "Kullanıcılar ",
+    "AdminPermGroup:WaitingTransferedOrders": "Aktarım Bekleyen Siparişler",
+    "AdminPermGroup:AdminOffers": "Teklifler",
+    "AdminPermGroup:AdminExtracts": "Hesap Ekstresi",
+    "AdminPermGroup:AdminFileManager": "Dosya Yönetimi",
+    "AdminPermGroup:AdminComplaints": "Şikayet Yönetimi",
+    "AdminPermGroup:AdminLoadingRequest": "Yükleme Talebi",
+    "AdminPermGroup:AdminPriceAggrements": "Müşteri Sözleşmeleri",
+    "AdminPermGroup:CustomerVisit": "Müşteri Ziyaretleri Listele",
+    "AdminPermGroup:CustomerVisitCreate": "Müşteri Ziyaretleri Oluştur",
+    "AdminPermGroup:AllCustomerVisit": "Tüm Müşteri Ziyaretlerini Görüntüle",
+    "AdminPermGroup:SalesPersonSeeCustomerPuanAndNotes": "Müşteri Notunu Ve Puanını Görsün",
+    "AdminPermGroup:AdminPriceLists": "Müşteri Fiyat Listeleri",
+    "AdminPermGroup:AimCreate": "Hedef Oluştur",
+    "AdminPermGroup:AimList": "Hedef Listeleri",
+    "AdminPermGroup:DispactImages": "İrsaliye Resim Ekle/Sil",
+    "AdminPermGroup:AdminCreateOrders": "Sipariş Oluştur",
+    "CustomerPermGroup": "Müşteri Yetkiler",
+    "CustomerPermGroup:Users": "Kullanıcılar",
+    "CustomerPermGroup:Orders": "Siparişler",
+    "CustomerPermGroup:CreateOrder": "Sipariş Oluştur",
+    "CustomerPermGroup:Dispacts": "İrsaliyeler",
+    "CustomerPermGroup:Extracts": "Hesap Ekstresi",
+    "CustomerPermGroup:PriceList": "Fiyat Listesi",
+    "CustomerPermGroup:CustomerOffers": "Teklifler",
+    "CustomerPermGroup:CustomerFileManager": "Dosya Yönetimi",
+    "CustomerPermGroup:CustomerComplaints": "Şikayet Yönetimi",
+    "CustomerPermGroup:CustomerLoadingRequest": "Yükleme Talebi"
+
+
+  }
+}

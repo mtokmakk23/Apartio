@@ -1,0 +1,22 @@
+{
+  "name": "Apartio",
+  "short_name": "Apartio",
+  "theme_color": "#364574",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "gcm_sender_id": "103953800507",
+  "icons": [
+    {
+      "src": "assets/images/logo-sm.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/logo-sm.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

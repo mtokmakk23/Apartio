@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Volo.Abp;
+using Volo.Abp.Domain.Entities.Auditing;
+using Volo.Abp.Emailing;
+
+namespace Apartio.Housings
+{
+    public class Housing : AuditedAggregateRoot<Guid>, ISoftDelete
+    {
+        public bool IsDeleted { get; set; } = false;
+        public string Name { get; protected set; }
+        public string City { get; protected set; }
+        public string Town { get; protected set; }
+        public string? Adress { get; protected set; }
+        public string? PostalCode { get; protected set; }
+        public string? Email { get; protected set; }
+        public string? Phone { get; protected set; }
+        public string? Type { get; protected set; }
+        public Housing(string name,string city,string town,string? type,string? adress,string? postalCode,string? email,string? phone) {
+          
+            setName(name);
+            setCity(city);
+            setTown(town);
+            setType(type);
+            setAdress(adress);
+            setPostalCode(postalCode);
+            setEmail(email);
+            setPhone(phone);
+           
+        }
+        public void setName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new UserFriendlyException($"Konut ismi boş geçilemez");
+            }
+            Name = name;
+        }
+        public void setCity(string city)
+        {
+            if (string.IsNullOrEmpty(city))
+            {
+                throw new UserFriendlyException($"İl boş geçilemez");
+            }
+            City = city;
+        }
+        public void setTown(string town)
+        {
+            if (string.IsNullOrEmpty(town))
+            {
+                throw new UserFriendlyException($"İlçe boş geçilemez");
+            }
+            Town = town;
+        }
+        public void setType(string type)
+        {
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new UserFriendlyException($"Konut Tipi boş geçilemez");
+            }
+            Type = type;
+        }
+        public void setAdress(string? adress)
+        {
+            Adress = adress;
+        }
+        public void setPostalCode(string? postalCode)
+        {
+            PostalCode = postalCode;
+        }
+        public void setEmail(string? email)
+        {
+            Email = email;
+        }
+        public void setPhone(string? phone)
+        {
+            Phone = phone;
+        }
+          
+    }
+}

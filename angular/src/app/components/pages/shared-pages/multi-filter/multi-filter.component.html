@@ -1,0 +1,26 @@
+
+
+ <p-columnFilter
+  [field]="field"
+  matchMode="in"
+  display="menu"
+  [showMatchModes]="false"
+  [showOperator]="false"
+  [showAddButton]="false"
+  [showApplyButton]="false"
+  [showClearButton]="false"
+>
+  <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+    <p-multiSelect
+      [ngModel]="value"
+      [options]="getFilterArray(field)"
+      (onChange)="filter($event.value)"
+    >
+      <ng-template let-option pTemplate="item">
+        <div class="inline-block vertical-align-middle">
+          <span class="ml-1 mt-1">{{ option }}</span>
+        </div>
+      </ng-template>
+    </p-multiSelect>
+  </ng-template>
+</p-columnFilter> 

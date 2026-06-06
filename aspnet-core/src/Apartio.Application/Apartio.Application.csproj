@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Apartio</RootNamespace>
+    <Configurations>Debug;Release;Mikro;Logo</Configurations>
+  </PropertyGroup>
+  <ItemGroup>
+    <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>4</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Apartio.Domain\Apartio.Domain.csproj" />
+    <ProjectReference Include="..\Apartio.Application.Contracts\Apartio.Application.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Allegory.Standart.Filter" Version="1.0.6" />
+    <PackageReference Include="FreeSpire.XLS" Version="14.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="ReportViewerCore.NETCore" Version="15.1.26" />
+    <PackageReference Include="RestSharp" Version="114.0.0" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Volo.Abp.Account.Application" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="8.3.2" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>..\..\..\..\..\..\Desktop\System.Windows.Forms.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Workers\" />
+  </ItemGroup>
+</Project>

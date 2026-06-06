@@ -1,0 +1,6 @@
+﻿namespace CustomerPortal.Blazor.Client.Pages;
+
+public partial class Index
+{
+
+}

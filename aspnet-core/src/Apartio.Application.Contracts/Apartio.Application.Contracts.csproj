@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Apartio</RootNamespace>
+    <Configurations>Debug;Release;Mikro;Logo</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Apartio.Domain.Shared\Apartio.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Allegory.Standart.Filter" Version="1.0.6" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Volo.Abp.ObjectExtending" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.Account.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.Identity.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="8.3.2" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
+  </ItemGroup>
+
+</Project>

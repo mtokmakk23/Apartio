@@ -1,0 +1,121 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card p-3" style="overflow-x: hidden" *ngIf="users">
+      <p-table
+        #userTable
+        [value]="users"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        [resizableColumns]="true"
+        [autoLayout]="true"
+        [paginator]="true"
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Gösterilen {first} - {last} (Toplam: {totalRecords} Kayıt)"
+        tableStyleClass="table table-striped align-middle table-nowrap mb-0"
+        [globalFilterFields]="['userName', 'email', 'extraProperties.CustomerNo']"
+      >
+        <ng-template pTemplate="caption">
+          <div class="row">
+            <div class="col-md-3 pl-2">
+              <div class="form-icon right">
+                <input
+                  type="search"
+                  class="form-control form-control-icon"
+                  (input)="userTable.filterGlobal($event.target.value, 'contains')"
+                />
+                <i class="fa fa-search"></i>
+              </div>
+            </div>
+            <div class="col-md-4" style="margin-left: auto; text-align: right">
+              <button
+                type="button"
+                class="btn btn-primary btn-label btn-sm"
+                (click)="showAddOrUpdateUserDialog(null)"
+              >
+                <i class="ri-user-add-line label-icon align-middle fs-16 me-2"></i> Yeni Kullanıcı
+                Ekle
+              </button>
+            </div>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Aktif</th>
+
+            <th>Kullanıcı Adı</th>
+            <th>E Posta Adresi</th>
+            <th>Telefon Numarası</th>
+            <th>Müşteri Kodu</th>
+            <th pFrozenColumn>İşlemler</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-user>
+          <tr>
+            <td>
+              <i *ngIf="user.isActive" class="fa fa-check text-success"></i>
+              <i *ngIf="!user.isActive" class="fa fa-ban text-danger"></i>
+            </td>
+            <td>{{ user.userName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phoneNumber }}</td>
+            <td>{{ user.extraProperties.CustomerNo }}</td>
+
+            <td>
+              <!-- Vertical Variation -->
+              <div class="btn-group" role="group" ngbDropdown>
+                <button
+                  id="btnGroupDrop1"
+                  type="button"
+                  class="btn btn-primary dropdown-toggle material-shadow-none arrow-none"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="true"
+                  ngbDropdownToggle
+                ></button>
+                <ul ngbDropdownMenu [autoClose]="true" [container]="'body'">
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="javascript:void(0);"
+                      (click)="showAddOrUpdateUserDialog(user.id)"
+                    >
+                      <i class="fa fa-edit text-warning"></i>
+                      Düzenle</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="javascript:void(0);"
+                      (click)="showPermissionsUserDialog(user.id)"
+                    >
+                      <i class="fa fa-key text-primary"></i>
+                      İzinler</a
+                    >
+                  </li>
+                  <!-- <li>
+                    <a
+                      class="dropdown-item"
+                      href="javascript:void(0);"
+                      (click)="delete(user.id, user.userName)"
+                    >
+                      <i class="fa fa-trash text-danger"></i>
+                      Sil</a
+                    >
+                  </li> -->
+                </ul>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+          <tr>
+            <td colspan="50" class="text-center">Kayıt bulunamadı</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- end row -->
