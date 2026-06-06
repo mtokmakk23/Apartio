@@ -18,8 +18,12 @@ namespace Apartio.Housings
         public string? Email { get; protected set; }
         public string? Phone { get; protected set; }
         public string? Type { get; protected set; }
-        public Housing(string name,string city,string town,string? type,string? adress,string? postalCode,string? email,string? phone) {
-          
+        public bool IsDelayCompensation { get; protected set; }
+        public decimal DelayCompensationRate { get; protected set; }
+        
+        public Housing(string name, string city, string town, string? type, string? adress, string? postalCode, string? email, string? phone, bool isDelayCompensation, decimal delayCompensationRate)
+        {
+
             setName(name);
             setCity(city);
             setTown(town);
@@ -28,7 +32,8 @@ namespace Apartio.Housings
             setPostalCode(postalCode);
             setEmail(email);
             setPhone(phone);
-           
+            setIsDelayCompensation(isDelayCompensation);
+            setDelayCompensationRate(delayCompensationRate);
         }
         public void setName(string name)
         {
@@ -78,6 +83,17 @@ namespace Apartio.Housings
         {
             Phone = phone;
         }
-          
+        public void setIsDelayCompensation(bool isDelayCompensation)
+        {
+            IsDelayCompensation = isDelayCompensation;
+        }
+        public void setDelayCompensationRate(decimal delayCompensationRate)
+        {
+            if (delayCompensationRate < 0)
+            {
+                throw new UserFriendlyException($"Gecikme tazminatı oranı negatif olamaz");
+            }
+            DelayCompensationRate = delayCompensationRate;
+        }
     }
 }
