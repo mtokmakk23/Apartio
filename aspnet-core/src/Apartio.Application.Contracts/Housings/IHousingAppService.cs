@@ -9,9 +9,11 @@ namespace Apartio.Housings
     public interface IHousingAppService : IApplicationService
     {
         Task<List<HousingDto>> GetListAsync();
-        Task CreateHousing(CreateOrUpdateHousing prop);
-        Task UpdateHousing(Guid id,CreateOrUpdateHousing prop);
-        Task Delete(Guid id);
-        Task<HousingDto> Get(Guid id);
+        Task CreateHousingAsync(CreateOrUpdateHousing prop);
+        Task UpdateHousingAsync(Guid id,CreateOrUpdateHousing prop);
+        Task DeleteAsync(Guid id);
+        Task<HousingDto> GetAsync(Guid id);
+        Task ChangeHousingAsync(Guid housingId);
+        Task<HousingDto> GetSelectedHousingAsync();
     }
 }

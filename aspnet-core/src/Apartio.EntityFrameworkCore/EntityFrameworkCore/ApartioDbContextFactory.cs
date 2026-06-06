@@ -1,8 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using Apartio.Housings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
 namespace Apartio.EntityFrameworkCore;
 
@@ -10,6 +11,11 @@ namespace Apartio.EntityFrameworkCore;
  * (like Add-Migration and Update-Database commands) */
 public class ApartioDbContextFactory : IDesignTimeDbContextFactory<ApartioDbContext>
 {
+
+    public ApartioDbContextFactory()
+    {
+    }
+
     public ApartioDbContext CreateDbContext(string[] args)
     {
         ApartioEfCoreEntityExtensionMappings.Configure();

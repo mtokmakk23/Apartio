@@ -77,24 +77,7 @@ namespace Apartio.Helpers
             }
             return false;
         }
-        public static string GetCustomerNo()
-        {
-
-            var user = _httpContextAccessor?.HttpContext?.User;
-            if (user == null) throw new AbpAuthorizationException();
-
-            var customer = user.Claims.ToList().FirstOrDefault(x => x.Type == "CustomerNo");
-            if (customer == null)
-            {
-                return "";
-            }
-            else
-            {
-
-                return customer.Value;
-            }
-
-        }
+      
         public static string GetEmailTemplate(string domain, string title, string header, string body, string uiUrl)
         {
 
@@ -162,29 +145,6 @@ namespace Apartio.Helpers
 
        
 
-        public static string RenameLoadingRequestStatuEnum(LoadingRequestStatus status)
-        {
-            if (status==LoadingRequestStatus.Iptal_Edildi)
-            {
-                return "İPTAL EDİLDİ";
-            }
-            if (status == LoadingRequestStatus.Musteri_Onayi_Bekleniyor)
-            {
-                return "MÜŞTERİ ONAYI BEKLENİYOR";
-            }
-            if (status == LoadingRequestStatus.Fabrika_Onayi_Bekleniyor)
-            {
-                return "FABRİKA ONAYI BEKLENİYOR";
-            }
-            if (status == LoadingRequestStatus.Onaylandi)
-            {
-                return "ONAYLANDI";
-            }
-            if (status == LoadingRequestStatus.Yuklendi)
-            {
-                return "YÜKLENDİ";
-            }
-            return "";
-        }
+       
     }
 }

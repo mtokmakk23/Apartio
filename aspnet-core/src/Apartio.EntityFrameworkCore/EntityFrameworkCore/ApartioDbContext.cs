@@ -1,8 +1,12 @@
 ﻿
+using Apartio.Blocks;
 using Apartio.Housings;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Threading;
+using System.Threading.Tasks;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -28,8 +32,11 @@ public class ApartioDbContext :
     IIdentityDbContext,
     ITenantManagementDbContext
 {
+
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
     public DbSet<Housing> Housings { get; set; }
+    public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
+    public DbSet<Block> Blocks { get; set; }
 
 
     #region Entities from the modules
@@ -63,12 +70,12 @@ public class ApartioDbContext :
     public ApartioDbContext(DbContextOptions<ApartioDbContext> options)
         : base(options)
     {
-
     }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
         foreach (var property in builder.Model
         .GetEntityTypes()
         .SelectMany(t => t.GetProperties())
@@ -93,6 +100,16 @@ public class ApartioDbContext :
         {
             typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Housings"), ApartioConsts.DbSchema);
             typeBuilder.ConfigureByConvention();       
+        });
+        builder.Entity<UserMatchHousing>(typeBuilder =>
+        {
+            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "UserMatchHousings"), ApartioConsts.DbSchema);
+            typeBuilder.ConfigureByConvention();
+        });
+        builder.Entity<Block>(typeBuilder =>
+        {
+            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Blocks"), ApartioConsts.DbSchema);
+            typeBuilder.ConfigureByConvention();
         });
     }
 }

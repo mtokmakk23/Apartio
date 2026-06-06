@@ -1,11 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Apartio.Communications;
-
+﻿using Apartio.Communications;
 using Apartio.EntityFrameworkCore;
-
 using Apartio.Helpers;
-
+using Apartio.Housings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using System;
+using System.Threading.Tasks;
 
 namespace Apartio;
 
@@ -43,6 +41,7 @@ public class Program
             var builder = WebApplication.CreateBuilder(args);
            
             builder.Services.AddScoped<IEmailService, EmailService>();
+           
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog();
