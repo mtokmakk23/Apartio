@@ -15,5 +15,9 @@ namespace Apartio.Housings
         Task<HousingDto> GetAsync(Guid id);
         Task ChangeHousingAsync(Guid housingId);
         Task<HousingDto> GetSelectedHousingAsync();
+        Task UpdateBlockAsync(Guid id, CreateOrUpdateBlock prop);
+        Task CreateBlockAsync(CreateOrUpdateBlock prop);
+        Task DeleteBlock(Guid id);
+        Task<List<BlockDto>> GetBlockListAsync();
     }
 }

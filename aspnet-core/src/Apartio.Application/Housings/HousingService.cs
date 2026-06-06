@@ -15,23 +15,24 @@ namespace Apartio.Housings
         private readonly IHousingRepository _housingRepository;
         private readonly IUserMatchHousingRepository _userMatchHousingRepository;
         private readonly IMemoryCache _cache;
-
-        public HousingService(IHousingRepository housingRepository, IUserMatchHousingRepository userMatchHousingRepository, IMemoryCache cache)
+        private readonly IBlockRepository _blockRepository;
+        public HousingService(IHousingRepository housingRepository, IUserMatchHousingRepository userMatchHousingRepository, IMemoryCache cache, IBlockRepository blockRepository)
         {
             _housingRepository = housingRepository;
             _userMatchHousingRepository = userMatchHousingRepository;
             _cache = cache;
+            _blockRepository = blockRepository;
         }
 
         public async Task CreateHousingAsync(CreateOrUpdateHousing prop)
         {
-           var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate);
-            await _housingRepository.InsertAsync(property,autoSave:true);
+            var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate);
+            await _housingRepository.InsertAsync(property, autoSave: true);
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            
+
             var property = await _housingRepository.GetAsync(id);
             await _housingRepository.DeleteAsync(property, autoSave: true);
         }
@@ -46,7 +47,7 @@ namespace Apartio.Housings
             return ObjectMapper.Map<List<Housing>, List<HousingDto>>(await _housingRepository.GetListAsync());
         }
 
-        public async Task UpdateHousingAsync(Guid id,CreateOrUpdateHousing prop)
+        public async Task UpdateHousingAsync(Guid id, CreateOrUpdateHousing prop)
         {
             var property = await _housingRepository.GetAsync(id);
             property.setAdress(prop.Adress);
@@ -64,8 +65,8 @@ namespace Apartio.Housings
 
         public async Task ChangeHousingAsync(Guid housingId)
         {
-            var housing = await _housingRepository.GetListAsync(x=>x.Id == housingId);
-            if (housing.Count>0)
+            var housing = await _housingRepository.GetListAsync(x => x.Id == housingId);
+            if (housing.Count > 0)
             {
                 var userMatchHousing = await _userMatchHousingRepository.GetListAsync(x => x.UserId == CurrentUser.Id);
                 if (userMatchHousing.Count > 0)
@@ -80,7 +81,8 @@ namespace Apartio.Housings
                     await _userMatchHousingRepository.InsertAsync(newUserMatchHousing, autoSave: true);
                 }
 
-            } else throw new UserFriendlyException("Konut Bulunamadı!");
+            }
+            else throw new UserFriendlyException("Konut Bulunamadı!");
         }
 
         public async Task<HousingDto> GetSelectedHousingAsync()
@@ -100,11 +102,11 @@ namespace Apartio.Housings
             if (userMatchHousing.Count > 0)
             {
 
-                _prop=await GetAsync(userMatchHousing[0].HousingId);
+                _prop = await GetAsync(userMatchHousing[0].HousingId);
             }
             else
             {
-                _prop=(await GetListAsync()).FirstOrDefault();
+                _prop = (await GetListAsync()).FirstOrDefault();
             }
 
             if (_prop == null)
@@ -118,6 +120,31 @@ namespace Apartio.Housings
             });
 
             return _prop;
+        }
+
+        public async Task<List<BlockDto>> GetBlockListAsync()
+        {
+            var housing = await GetSelectedHousingAsync();
+            return ObjectMapper.Map<List<Block>, List<BlockDto>>(await _blockRepository.GetListAsync(x => x.HousingId == housing.Id));
+        }
+
+        public async Task DeleteBlock(Guid id)
+        {
+            var block = await _blockRepository.GetAsync(id);
+            await _blockRepository.DeleteAsync(block, autoSave: true);
+        }
+        public async Task CreateBlockAsync(CreateOrUpdateBlock prop)
+        {
+            var housing = await GetSelectedHousingAsync();
+            var block = new Block(housing.Id, prop.BlockName);
+            await _blockRepository.InsertAsync(block, autoSave: true);
+        }
+
+        public async Task UpdateBlockAsync(Guid id, CreateOrUpdateBlock prop)
+        {
+            var block = await _blockRepository.GetAsync(id);
+            block.SetBlockName(prop.BlockName);
+            await _blockRepository.UpdateAsync(block, autoSave: true);
         }
     }
 }
