@@ -1,4 +1,5 @@
 ﻿using Apartio.Configuration.Communication;
+using Microsoft.AspNetCore.Authorization;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using static Volo.Abp.Identity.Settings.IdentitySettingNames;
 
 namespace Apartio.Communications
 {
+    [Authorize]
     public class SmsService : ApartioAppService, ISmsService
     {
         private readonly ISmsConnectionConfiguration _smsConnectionConfiguration;

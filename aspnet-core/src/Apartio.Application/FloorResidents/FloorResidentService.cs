@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Apartio.FloorResidents
 {
+    [Authorize] 
     public class FloorResidentService : ApartioAppService, IFloorResidentAppService
     {
         private readonly IFloorResidentRepository _floorResidentRepository;

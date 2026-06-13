@@ -1,4 +1,5 @@
-﻿using Apartio.FloorResidents;
+﻿using Apartio.DuesTransactions;
+using Apartio.FloorResidents;
 using Apartio.Housings;
 using AutoMapper;
 
@@ -21,6 +22,9 @@ public class ApartioApplicationAutoMapperProfile : Profile
 
         CreateMap<FloorResident, FloorResidentDto>().ReverseMap();
         CreateMap<FloorResident, CreateOrUpdateFloorResident>().ReverseMap();
+
+        CreateMap<DuesTransaction, DuesTransactionDto>().ReverseMap();
+        CreateMap<DuesTransaction, CreateOrUpdateDuesTransaction>().ReverseMap();
        
     }
 }

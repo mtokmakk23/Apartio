@@ -1,4 +1,5 @@
 ﻿using Apartio.Configuration.Communication;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Apartio.Communications
 {
+    [Authorize]
     public class EmailService : ApartioAppService, IEmailService
     {
         private readonly IEmailConnectionConfiguration _emailConnectionConfiguration;

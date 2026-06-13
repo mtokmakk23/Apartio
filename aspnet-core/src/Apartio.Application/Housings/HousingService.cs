@@ -1,4 +1,5 @@
 ﻿using IdentityServer4.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using Volo.Abp;
 
 namespace Apartio.Housings
 {
+    [Authorize]
     public class HousingService : ApartioAppService, IHousingAppService
     {
         private readonly IHousingRepository _housingRepository;
