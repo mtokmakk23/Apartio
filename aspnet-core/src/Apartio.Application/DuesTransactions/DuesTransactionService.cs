@@ -49,7 +49,7 @@ namespace Apartio.DuesTransactions
             var property = await _duesTransactionRepository.GetAsync(id);
             ObjectMapper.Map(prop, property);
             await _duesTransactionRepository.UpdateAsync(property, autoSave: true);
-        }
+        
         }
     }
 }
