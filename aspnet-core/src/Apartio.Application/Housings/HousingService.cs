@@ -28,7 +28,7 @@ namespace Apartio.Housings
 
         public async Task CreateHousingAsync(CreateOrUpdateHousing prop)
         {
-            var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate);
+            var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate, prop.LastPaymentDay);
             await _housingRepository.InsertAsync(property, autoSave: true);
         }
 
@@ -62,6 +62,8 @@ namespace Apartio.Housings
             property.setType(prop.Type);
             property.setIsDelayCompensation(prop.IsDelayCompensation);
             property.setDelayCompensationRate(prop.DelayCompensationRate);
+            property.LastPaymentDay = prop.LastPaymentDay;
+
             await _housingRepository.UpdateAsync(property, autoSave: true);
         }
 

@@ -1,4 +1,5 @@
 ﻿
+using Apartio.DuesTransactions;
 using Apartio.FloorResidents;
 using Apartio.Housings;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,7 @@ public class ApartioDbContext :
     public DbSet<Block> Blocks { get; set; }
     public DbSet<Circle> Circles { get; set; }
     public DbSet<FloorResident> FloorResidents { get; set; }
+    public DbSet<DuesTransaction> DuesTransactions { get; set; }
 
 
     #region Entities from the modules
@@ -121,6 +123,11 @@ public class ApartioDbContext :
         builder.Entity<FloorResident>(typeBuilder =>
         {
             typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "FloorResidents"), ApartioConsts.DbSchema);
+            typeBuilder.ConfigureByConvention();
+        });
+        builder.Entity<DuesTransaction>(typeBuilder =>
+        {
+            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "DuesTransactions"), ApartioConsts.DbSchema);
             typeBuilder.ConfigureByConvention();
         });
     }

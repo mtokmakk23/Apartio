@@ -20,8 +20,9 @@ namespace Apartio.Housings
         public string? Type { get; protected set; }
         public bool IsDelayCompensation { get; protected set; }
         public decimal DelayCompensationRate { get; protected set; }
-        
-        public Housing(string name, string city, string town, string? type, string? adress, string? postalCode, string? email, string? phone, bool isDelayCompensation, decimal delayCompensationRate)
+        public int LastPaymentDay { get; set; }
+
+        public Housing(string name, string city, string town, string? type, string? adress, string? postalCode, string? email, string? phone, bool isDelayCompensation, decimal delayCompensationRate, int lastPaymentDay)
         {
 
             setName(name);
@@ -34,6 +35,7 @@ namespace Apartio.Housings
             setPhone(phone);
             setIsDelayCompensation(isDelayCompensation);
             setDelayCompensationRate(delayCompensationRate);
+            LastPaymentDay = lastPaymentDay;
         }
         public void setName(string name)
         {
