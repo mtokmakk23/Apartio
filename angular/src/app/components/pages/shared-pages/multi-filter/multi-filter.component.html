@@ -1,26 +1,9 @@
-
-
- <p-columnFilter
-  [field]="field"
-  matchMode="in"
-  display="menu"
-  [showMatchModes]="false"
-  [showOperator]="false"
-  [showAddButton]="false"
-  [showApplyButton]="false"
-  [showClearButton]="false"
->
-  <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-    <p-multiSelect
-      [ngModel]="value"
-      [options]="getFilterArray(field)"
-      (onChange)="filter($event.value)"
-    >
-      <ng-template let-option pTemplate="item">
-        <div class="inline-block vertical-align-middle">
-          <span class="ml-1 mt-1">{{ option }}</span>
-        </div>
-      </ng-template>
-    </p-multiSelect>
-  </ng-template>
-</p-columnFilter> 
+<div class="filter-container">
+  <select class="form-select form-select-sm" 
+    (change)="onFilterChange($event)">
+    <option value="">Tümü</option>
+    <option *ngFor="let item of getFilterArray(field)" [value]="item">
+      {{ item }}
+    </option>
+  </select>
+</div>

@@ -1,0 +1,173 @@
+<div class="row">
+  <!-- Başlık -->
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Ana Sayfa</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="row">
+  <div class="col-xl-3 col-md-6" *ngFor="let stat of stats">
+    <div class="card card-animate">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="fw-medium text-muted mb-0">{{ stat.title }}</p>
+            <h2 class="mt-2 ff-secondary fw-semibold">
+              <span>{{ stat.value }}</span>
+            </h2>
+            <p class="mb-0 text-muted">
+              <span [class]="'badge bg-' + (stat.changeType === 'up' ? 'success' : 'danger') + '-subtle text-' + (stat.changeType === 'up' ? 'success' : 'danger')">
+                <i [class]="'ri-arrow-' + (stat.changeType === 'up' ? 'up' : 'down') + '-line'"></i>
+                {{ stat.change }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <div class="avatar-sm flex-shrink-0">
+              <span [class]="'avatar-title rounded-circle fs-2 ' + stat.bg + ' text-' + stat.color">
+                <i [class]="stat.icon"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Aidat Durumu + Son Talepler -->
+<div class="row">
+
+  <!-- Aidat Durumu -->
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="ri-money-dollar-circle-line me-2 text-primary"></i>
+          Aidat Durumu
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Ödenen</span>
+          <span class="fw-semibold text-success">{{ aidatOzet.odenen }} / {{ aidatOzet.toplam }}</span>
+        </div>
+        <div class="progress mb-4" style="height: 10px;">
+          <div
+            class="progress-bar bg-success"
+            role="progressbar"
+            [style.width.%]="aidatOzet.yuzde"
+          ></div>
+        </div>
+
+        <div class="row text-center">
+          <div class="col-4">
+            <div class="p-3 rounded bg-success-subtle">
+              <h4 class="text-success mb-1">{{ aidatOzet.odenen }}</h4>
+              <p class="text-muted mb-0 fs-12">Ödendi</p>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 rounded bg-warning-subtle">
+              <h4 class="text-warning mb-1">{{ aidatOzet.bekleyen }}</h4>
+              <p class="text-muted mb-0 fs-12">Bekliyor</p>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 rounded bg-primary-subtle">
+              <h4 class="text-primary mb-1">{{ aidatOzet.yuzde }}%</h4>
+              <p class="text-muted mb-0 fs-12">Oran</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Son Talepler -->
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="card-title mb-0">
+          <i class="ri-tools-line me-2 text-danger"></i>
+          Son Arıza Talepleri
+        </h5>
+        <a href="javascript:void(0);" class="text-primary fs-13">Tümünü Gör</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Daire</th>
+                <th>Konu</th>
+                <th>Tarih</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of requests">
+                <td>
+                  <span class="badge bg-secondary-subtle text-secondary fs-12">{{ req.daire }}</span>
+                </td>
+                <td>{{ req.konu }}</td>
+                <td class="text-muted">{{ req.tarih }}</td>
+                <td>
+                  <span [class]="'badge bg-' + req.durumColor + '-subtle text-' + req.durumColor">
+                    {{ req.durum }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Son Duyurular -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="card-title mb-0">
+          <i class="ri-megaphone-line me-2 text-warning"></i>
+          Son Duyurular
+        </h5>
+        <a href="javascript:void(0);" class="text-primary fs-13">Tümünü Gör</a>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4" *ngFor="let ann of announcements">
+            <div class="d-flex p-3 border rounded mb-2">
+              <div class="flex-shrink-0 me-3">
+                <div class="avatar-sm">
+                  <span [class]="'avatar-title rounded bg-' + ann.badgeColor + '-subtle text-' + ann.badgeColor + ' fs-3'">
+                    <i class="ri-megaphone-line"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <h6 class="mb-1">{{ ann.title }}</h6>
+                  <span [class]="'badge bg-' + ann.badgeColor + '-subtle text-' + ann.badgeColor">{{ ann.badge }}</span>
+                </div>
+                <p class="text-muted mb-1 fs-12">{{ ann.date }}</p>
+                <p class="text-muted mb-0 fs-13">{{ ann.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
