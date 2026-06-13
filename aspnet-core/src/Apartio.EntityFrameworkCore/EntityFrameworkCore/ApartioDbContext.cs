@@ -1,4 +1,5 @@
 ﻿
+using Apartio.FloorResidents;
 using Apartio.Housings;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -36,6 +37,8 @@ public class ApartioDbContext :
     public DbSet<Housing> Housings { get; set; }
     public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
     public DbSet<Block> Blocks { get; set; }
+    public DbSet<Circle> Circles { get; set; }
+    public DbSet<FloorResident> FloorResidents { get; set; }
 
 
     #region Entities from the modules
@@ -108,6 +111,16 @@ public class ApartioDbContext :
         builder.Entity<Block>(typeBuilder =>
         {
             typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Blocks"), ApartioConsts.DbSchema);
+            typeBuilder.ConfigureByConvention();
+        });
+        builder.Entity<Circle>(typeBuilder =>
+        {
+            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Circles"), ApartioConsts.DbSchema);
+            typeBuilder.ConfigureByConvention();
+        });
+        builder.Entity<FloorResident>(typeBuilder =>
+        {
+            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "FloorResidents"), ApartioConsts.DbSchema);
             typeBuilder.ConfigureByConvention();
         });
     }

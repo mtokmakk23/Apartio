@@ -19,5 +19,11 @@ namespace Apartio.Housings
         Task CreateBlockAsync(CreateOrUpdateBlock prop);
         Task DeleteBlock(Guid id);
         Task<List<BlockDto>> GetBlockListAsync();
+
+
+        Task UpdateCircleAsync(Guid id, CreateOrUpdateCircle prop);
+        Task CreateCircleAsync(CreateOrUpdateCircle prop);
+        Task DeleteCircle(Guid id);
+        Task<List<CircleDto>> GetCircleListAsync(Guid blockId);
     }
 }

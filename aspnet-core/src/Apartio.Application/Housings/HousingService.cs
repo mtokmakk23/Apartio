@@ -16,12 +16,14 @@ namespace Apartio.Housings
         private readonly IUserMatchHousingRepository _userMatchHousingRepository;
         private readonly IMemoryCache _cache;
         private readonly IBlockRepository _blockRepository;
-        public HousingService(IHousingRepository housingRepository, IUserMatchHousingRepository userMatchHousingRepository, IMemoryCache cache, IBlockRepository blockRepository)
+        private readonly ICircleRepository _circleRepository;
+        public HousingService(IHousingRepository housingRepository, IUserMatchHousingRepository userMatchHousingRepository, IMemoryCache cache, IBlockRepository blockRepository, ICircleRepository circleRepository)
         {
             _housingRepository = housingRepository;
             _userMatchHousingRepository = userMatchHousingRepository;
             _cache = cache;
             _blockRepository = blockRepository;
+            _circleRepository = circleRepository;
         }
 
         public async Task CreateHousingAsync(CreateOrUpdateHousing prop)
@@ -145,6 +147,42 @@ namespace Apartio.Housings
             var block = await _blockRepository.GetAsync(id);
             block.SetBlockName(prop.BlockName);
             await _blockRepository.UpdateAsync(block, autoSave: true);
+        }
+
+        public async Task UpdateCircleAsync(Guid id, CreateOrUpdateCircle prop)
+        {
+            var circle = await _circleRepository.GetAsync(id);
+            circle.SetCircleName(prop.CircleName);
+            circle.BlockId = prop.BlockId;
+            circle.HomeOwnerId = prop.HomeOwnerId;
+            circle.HirerId = prop.HirerId;
+            await _circleRepository.UpdateAsync(circle, autoSave: true);
+        }
+
+        public async Task CreateCircleAsync(CreateOrUpdateCircle prop)
+        {
+            var circle = new Circle(prop.BlockId, prop.CircleName, prop.HomeOwnerId, prop.HirerId);
+            await _circleRepository.InsertAsync(circle, autoSave: true);
+        }
+
+        public async Task DeleteCircle(Guid id)
+        {
+            var circle = await _circleRepository.GetAsync(id);
+            await _circleRepository.DeleteAsync(circle, autoSave: true);
+        }
+        
+
+        public async Task<List<CircleDto>> GetCircleListAsync(Guid blockId)
+        {
+            var circleQuery=await _circleRepository.GetQueryableAsync();
+            var blockQuery = await _blockRepository.GetQueryableAsync();
+            var housing = await GetSelectedHousingAsync();
+
+            var circles = from c in circleQuery
+                          join b in blockQuery on c.BlockId equals b.Id
+                          where b.HousingId == housing.Id && c.BlockId == blockId
+                          select c;
+            return ObjectMapper.Map<List<Circle>, List<CircleDto>>(circles.ToList());
         }
     }
 }
