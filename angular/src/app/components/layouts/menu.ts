@@ -1,6 +1,5 @@
-import { CurrentUserDto, PermissionService } from '@abp/ng.core';
+import { PermissionService } from '@abp/ng.core';
 import { CurrentUserServiceService } from 'src/app/services/utils/current-user-service/current-user-service.service';
-import { environment } from 'src/environments/environment';
 
 export interface MenuItem {
   id?: number;
@@ -15,49 +14,27 @@ export interface MenuItem {
   isLayout?: boolean;
   isAdminPage?: boolean;
 }
+
 export function getMenuItems(
   permissionService: PermissionService,
   currentUserService: CurrentUserServiceService,
 ) {
-  var MENU: MenuItem[] = [];
-
-  MENU = [
+  var MENU: MenuItem[] = [
+    { id: 0, label: 'Ana Sayfa', icon: 'ri-home-4-line', link: '/home' },
+    { id: 0, label: 'Daire Yönetimi', icon: 'ri-building-2-line', link: '/daireler', isAdminPage: false },
+    { id: 0, label: 'Sakin Yönetimi', icon: 'ri-group-line', link: '/sakinler', isAdminPage: false },
+    { id: 0, label: 'Aidat Takibi', icon: 'ri-money-dollar-circle-line', link: '/aidatlar', isAdminPage: false },
+    { id: 0, label: 'Arıza / Talepler', icon: 'ri-tools-line', link: '/arizalar', isAdminPage: false },
+    { id: 0, label: 'Duyurular', icon: 'ri-megaphone-line', link: '/duyurular', isAdminPage: false },
     {
-      id: 0,
-      label: 'Ana Sayfa',
-      icon: 'ri-home-4-line',
-      link: '/home'
-    },
-   
-    {
-      id: 0,
-      label: 'Açılır Menu',
-      icon: 'bx bx-shopping-bag',
-     // isLayout: permissionService.getGrantedPolicy('CustomerPermGroup.CreateOrder') ,
-      isCollapsed: true,
-      isAdminPage: false,
+      id: 0, label: 'Açılır Menu', icon: 'bx bx-shopping-bag', isCollapsed: true, isAdminPage: false,
       subItems: [
-        {
-          id: 1000,
-          label: 'Menü 1',
-          icon: 'ri-team-line',
-          link: '',
-          parentId: 2,
-          isAdminPage: false,
-        },
-        {
-          id: 1002,
-          label: 'Menü 2',
-          icon: 'ri-team-line',
-          link: '',
-          parentId: 2,
-          isAdminPage: false,
-        },
-       
+        { id: 1000, label: 'Menü 1', icon: 'ri-team-line', link: '', parentId: 2, isAdminPage: false },
+        { id: 1002, label: 'Menü 2', icon: 'ri-team-line', link: '', parentId: 2, isAdminPage: false },
       ],
     },
-   
   ];
+
   if (currentUserService.isAdmin && currentUserService.customerNo != '') {
     MENU = allowAllMenus(MENU);
   }
@@ -69,12 +46,9 @@ export function getMenuItems(
   MENU.forEach(el => {
     if (el.id == 0) {
       el.id = i;
-      if (el.subItems != undefined)
-        if (el.subItems.length > 0) {
-          el.subItems.forEach(elSub => {
-            elSub.parentId = i;
-          });
-        }
+      if (el.subItems?.length > 0) {
+        el.subItems.forEach((elSub: any) => { elSub.parentId = i; });
+      }
     }
     i++;
   });
@@ -84,23 +58,14 @@ export function getMenuItems(
 function allowAllMenus(MENU: MenuItem[]) {
   MENU.filter(x => x.isAdminPage == false).forEach(i => {
     if (i.isLayout != undefined) i.isLayout = true;
-    if (i.subItems != undefined)
-      if (i.subItems.length > 0) {
-        i.subItems = allowAllMenus(i.subItems);
-      }
+    if (i.subItems?.length > 0) i.subItems = allowAllMenus(i.subItems);
   });
   MENU.filter(x => x.isAdminPage == true).forEach(i => {
     i.isLayout = false;
-    if (i.subItems != undefined)
-      if (i.subItems.length > 0) {
-        i.subItems = allowAllMenus(i.subItems);
-      }
+    if (i.subItems?.length > 0) i.subItems = allowAllMenus(i.subItems);
   });
   MENU.filter(x => x.isAdminPage == undefined).forEach(i => {
-    if (i.subItems != undefined)
-      if (i.subItems.length > 0) {
-        i.subItems = allowAllMenus(i.subItems);
-      }
+    if (i.subItems?.length > 0) i.subItems = allowAllMenus(i.subItems);
   });
   return MENU;
 }

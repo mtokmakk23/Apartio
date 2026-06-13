@@ -1,0 +1,16 @@
+.card-animate {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+}
+.avatar-sm {
+  height: 3rem; width: 3rem;
+  .avatar-title { font-size: 1.25rem; }
+}
+.btn-soft-primary { background-color: rgba(var(--vz-primary-rgb), 0.1); color: var(--vz-primary); border: none; &:hover { background-color: var(--vz-primary); color: #fff; } }
+.btn-soft-success { background-color: rgba(var(--vz-success-rgb), 0.1); color: var(--vz-success); border: none; &:hover { background-color: var(--vz-success); color: #fff; } }
+.btn-soft-warning { background-color: rgba(var(--vz-warning-rgb), 0.1); color: var(--vz-warning); border: none; &:hover { background-color: var(--vz-warning); color: #fff; } }
+.btn-soft-info { background-color: rgba(var(--vz-info-rgb), 0.1); color: var(--vz-info); border: none; &:hover { background-color: var(--vz-info); color: #fff; } }
+.fs-12 { font-size: 12px; }

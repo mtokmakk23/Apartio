@@ -1,0 +1,321 @@
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Arıza / Talep Takibi</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
+          <li class="breadcrumb-item active">Arıza Takibi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Özet Kartlar -->
+<div class="row">
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Bekleyen</p>
+          <h3 class="mb-0 text-warning">{{ toplamBekleyen() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-warning-subtle text-warning fs-2">
+            <i class="ri-time-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">İşlemde</p>
+          <h3 class="mb-0 text-primary">{{ toplamIslemde() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
+            <i class="ri-loader-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Tamamlandı</p>
+          <h3 class="mb-0 text-success">{{ toplamTamamlanan() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-success-subtle text-success fs-2">
+            <i class="ri-checkbox-circle-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Acil Talepler</p>
+          <h3 class="mb-0 text-danger">{{ toplamAcil() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-danger-subtle text-danger fs-2">
+            <i class="ri-alarm-warning-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tablo -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <div class="form-icon right">
+              <input type="search" class="form-control form-control-icon"
+                placeholder="Daire, sakin veya konu ara..."
+                [(ngModel)]="aramaMetni" (input)="filtrele()" />
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenKategori" (change)="filtrele()">
+              <option value="">Tüm Kategoriler</option>
+              <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenOncelik" (change)="filtrele()">
+              <option value="">Tüm Öncelikler</option>
+              <option *ngFor="let o of oncelikler" [value]="o">{{ o }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenDurum" (change)="filtrele()">
+              <option value="">Tüm Durumlar</option>
+              <option *ngFor="let d of durumlar" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 text-end">
+            <button class="btn btn-primary btn-sm btn-label" (click)="yeniAriza()">
+              <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
+              Yeni Talep Ekle
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Daire</th>
+                <th>Sakin</th>
+                <th>Kategori</th>
+                <th>Konu</th>
+                <th>Tarih</th>
+                <th>Öncelik</th>
+                <th>Durum</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ariza of filteredArizalar">
+                <td>
+                  <span class="badge bg-secondary-subtle text-secondary">{{ ariza.daireNo }}</span>
+                </td>
+                <td>{{ ariza.sakinAdi }}</td>
+                <td>
+                  <i [class]="kategoriIcon(ariza.kategori) + ' me-1 text-muted'"></i>
+                  {{ ariza.kategori }}
+                </td>
+                <td>{{ ariza.konu }}</td>
+                <td class="text-muted">{{ ariza.tarih }}</td>
+                <td>
+                  <span [class]="'badge bg-' + oncelikRenk(ariza.oncelik) + '-subtle text-' + oncelikRenk(ariza.oncelik)">
+                    {{ ariza.oncelik }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="'badge bg-' + durumRenk(ariza.durum) + '-subtle text-' + durumRenk(ariza.durum)">
+                    {{ ariza.durum }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-soft-info me-1" (click)="detayGoster(ariza)" title="Detay">
+                    <i class="ri-eye-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(ariza)" title="Düzenle">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-success me-1" (click)="whatsappGonder(ariza)" title="WhatsApp Gönder">
+                    <i class="ri-whatsapp-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-warning me-1" (click)="smsGonder(ariza)" title="SMS Gönder">
+                    <i class="ri-message-2-line"></i>
+                  </button>
+                  <button *ngIf="ariza.durum === 'Bekliyor'"
+                    class="btn btn-sm btn-soft-warning me-1"
+                    (click)="durumGuncelle(ariza, 'İşlemde')" title="İşleme Al">
+                    <i class="ri-loader-line"></i>
+                  </button>
+                  <button *ngIf="ariza.durum === 'İşlemde'"
+                    class="btn btn-sm btn-soft-success"
+                    (click)="durumGuncelle(ariza, 'Tamamlandı')" title="Tamamlandı">
+                    <i class="ri-checkbox-circle-line"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredArizalar.length === 0">
+                <td colspan="8" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detay Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showDetayModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Talep Detayı</h5>
+        <button type="button" class="btn-close" (click)="showDetayModal = false"></button>
+      </div>
+      <div class="modal-body" *ngIf="seciliAriza">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="text-muted fs-12">Daire</label>
+            <p class="mb-0 fw-semibold">{{ seciliAriza.daireNo }}</p>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Sakin</label>
+            <p class="mb-0 fw-semibold">{{ seciliAriza.sakinAdi }}</p>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Telefon</label>
+            <p class="mb-0">{{ seciliAriza.telefon }}</p>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Kategori</label>
+            <p class="mb-0">{{ seciliAriza.kategori }}</p>
+          </div>
+          <div class="col-12">
+            <label class="text-muted fs-12">Konu</label>
+            <p class="mb-0 fw-semibold">{{ seciliAriza.konu }}</p>
+          </div>
+          <div class="col-12">
+            <label class="text-muted fs-12">Açıklama</label>
+            <p class="mb-0">{{ seciliAriza.aciklama }}</p>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Talep Tarihi</label>
+            <p class="mb-0">{{ seciliAriza.tarih }}</p>
+          </div>
+          <div class="col-6" *ngIf="seciliAriza.tamamlanmaTarihi">
+            <label class="text-muted fs-12">Tamamlanma Tarihi</label>
+            <p class="mb-0 text-success">{{ seciliAriza.tamamlanmaTarihi }}</p>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Öncelik</label>
+            <br>
+            <span [class]="'badge bg-' + oncelikRenk(seciliAriza.oncelik) + '-subtle text-' + oncelikRenk(seciliAriza.oncelik)">
+              {{ seciliAriza.oncelik }}
+            </span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted fs-12">Durum</label>
+            <br>
+            <span [class]="'badge bg-' + durumRenk(seciliAriza.durum) + '-subtle text-' + durumRenk(seciliAriza.durum)">
+              {{ seciliAriza.durum }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showDetayModal = false">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ seciliAriza ? 'Talep Düzenle' : 'Yeni Talep Ekle' }}</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Daire No</label>
+            <input type="text" class="form-control" [(ngModel)]="form.daireNo" placeholder="A-01" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Blok</label>
+            <select class="form-select" [(ngModel)]="form.blok">
+              <option *ngFor="let b of bloklar" [value]="b">Blok {{ b }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Sakin Adı</label>
+            <input type="text" class="form-control" [(ngModel)]="form.sakinAdi" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Telefon</label>
+            <input type="text" class="form-control" [(ngModel)]="form.telefon" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" [(ngModel)]="form.kategori">
+              <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Öncelik</label>
+            <select class="form-select" [(ngModel)]="form.oncelik">
+              <option *ngFor="let o of oncelikler" [value]="o">{{ o }}</option>
+            </select>
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Konu</label>
+            <input type="text" class="form-control" [(ngModel)]="form.konu" placeholder="Kısa açıklama" />
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea class="form-control" [(ngModel)]="form.aciklama" rows="3" placeholder="Detaylı açıklama..."></textarea>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Durum</label>
+            <select class="form-select" [(ngModel)]="form.durum">
+              <option *ngFor="let d of durumlar" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showModal = false">İptal</button>
+        <button class="btn btn-primary" (click)="kaydet()">
+          <i class="ri-save-line me-1"></i> Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
