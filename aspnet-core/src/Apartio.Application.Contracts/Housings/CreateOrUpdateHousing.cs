@@ -15,8 +15,8 @@ namespace Apartio.Housings
         public string? Email { get; init; }
         public string? Phone { get; init; }
         public string? Type { get; init; }
-        public bool IsDelayCompensation { get; protected set; }
-        public decimal DelayCompensationRate { get; protected set; }
+        public bool IsDelayCompensation { get;  set; }
+        public decimal DelayCompensationRate { get;  set; }
         public int LastPaymentDay { get; set; }
 
     }
