@@ -2,7 +2,7 @@
 using Apartio.Configuration.App;
 using Apartio.Configuration.Communication;
 using Apartio.Configuration.General;
-
+using Apartio.Housings;
 using IdentityServer4.Services;
 
 using Microsoft.Extensions.Configuration;
@@ -29,6 +29,7 @@ namespace Apartio.DependencyResolver
            
             serviceProvider.AddSingleton<IEmailService, EmailService>();
             serviceProvider.AddSingleton<ISmsService, SmsService>();
+            serviceProvider.AddSingleton<IHousingAppService, HousingService>();
  
 
         }

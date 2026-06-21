@@ -15,5 +15,6 @@ namespace Apartio.FloorResidents
         Task UpdateFloorResidentAsync(Guid id, CreateOrUpdateFloorResident prop);
         Task DeleteFloorResidentAsync(Guid id);
         Task<FloorResidentDto> GetFloorResidentAsync(Guid id);
+        Task<List<FloorResidentExtract>> GetExtract(Guid FloorResidentId);
     }
 }
