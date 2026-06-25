@@ -9,7 +9,7 @@ using Apartio.DuesTransactions;
 
 namespace Apartio.FloorResidents
 {
-    [Authorize] 
+    [Authorize]
     public class FloorResidentService : ApartioAppService, IFloorResidentAppService
     {
         private readonly IFloorResidentRepository _floorResidentRepository;
@@ -44,7 +44,7 @@ namespace Apartio.FloorResidents
         public async Task<List<FloorResidentDto>> GetFloorResidentListAsync()
         {
             var housing = await _housingAppService.GetSelectedHousingAsync();
-            var floorResidents = await _floorResidentRepository.GetListAsync(x=>x.HousingId == housing.Id);
+            var floorResidents = await _floorResidentRepository.GetListAsync(x => x.HousingId == housing.Id);
             return floorResidents.Select(ObjectMapper.Map<FloorResident, FloorResidentDto>).ToList();
         }
 
@@ -63,9 +63,19 @@ namespace Apartio.FloorResidents
         public async Task<List<FloorResidentExtract>> GetExtract(Guid FloorResidentId)
         {
             var housing = await _housingAppService.GetSelectedHousingAsync();
-            var aidatlar = await _duesTransactionRepository.GetListAsync(x => x.FloorResidentId == FloorResidentId && x.HousingId == housing.Id);
-            var aidatborclari = aidatlar.Where(x => x.Sing==0).OrderBy(x=>x.Date_).ToList();
-            var aidatOdemeleri = aidatlar.Where(x => x.Sing==1).OrderBy(x => x.Date_).ToList();
+            var aidatlar = (await _duesTransactionRepository.GetListAsync(x => x.FloorResidentId == FloorResidentId && x.HousingId == housing.Id)).ToList();
+            var aidatborclari = aidatlar.Where(x => x.Sing == 0).OrderBy(x => x.Date_).ToList();
+           
+            var aidatOdemeleri = aidatlar
+    .Where(x => x.Sing == 1)
+    .OrderBy(x => x.Date_)
+    .Select(x => x.Clone())
+    .ToList();
+            var aidatOdemeleriOrj = aidatlar
+   .Where(x => x.Sing == 1)
+   .OrderBy(x => x.Date_)
+   .Select(x => x.Clone())
+   .ToList();
             var list = new List<FloorResidentExtract>();
 
             foreach (var aidatborcu in aidatborclari)
@@ -79,16 +89,16 @@ namespace Apartio.FloorResidents
                 extract.Credit = 0;
                 extract.Balance = 0;
                 extract.Remainder = aidatborcu.Price;
-                foreach (var odeme in aidatOdemeleri.Where(x=>x.Price>0))
+                foreach (var odeme in aidatOdemeleri.Where(x => x.Price > 0))
                 {
                     if (aidatborcu.DueDate.HasValue)
                     {
-                        if (aidatborcu.DueDate.Value.Date>odeme.Date_.Date)
+                        if (aidatborcu.DueDate.Value.Date > odeme.Date_.Date)
                         {
                             if (housing.IsDelayCompensation)
                             {
                                 var delayDays = (odeme.Date_.Date - aidatborcu.DueDate.Value.Date).Days;
-                                var gecikmeBedeli= extract.Remainder*(100/ housing.DelayCompensationRate)/ 30 * delayDays;
+                                var gecikmeBedeli = extract.Remainder * (100 / housing.DelayCompensationRate) / 30 * delayDays;
                                 extract.Remainder += gecikmeBedeli;
                                 extract.DelayDebitPrice += gecikmeBedeli;
                                 if (extract.Remainder >= odeme.Price)
@@ -133,7 +143,7 @@ namespace Apartio.FloorResidents
                 }
                 list.Add(extract);
             }
-            foreach (var odeme in aidatOdemeleri)
+            foreach (var odeme in aidatOdemeleriOrj)
             {
                 var extract = new FloorResidentExtract();
                 extract.DueDate = odeme.DueDate;

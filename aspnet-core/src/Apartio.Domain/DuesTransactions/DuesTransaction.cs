@@ -41,5 +41,9 @@ namespace Apartio.DuesTransactions
             Note = note;
             DueDate = dueDate;
         }
+        public DuesTransaction Clone()
+        {
+            return (DuesTransaction)this.MemberwiseClone();
+        }
     }
 }
