@@ -25,3 +25,17 @@
   border: none;
   &:hover { background-color: var(--vz-primary); color: #fff; }
 }
+
+.btn-soft-info {
+  background-color: rgba(var(--vz-info-rgb), 0.1);
+  color: var(--vz-info);
+  border: none;
+  &:hover { background-color: var(--vz-info); color: #fff; }
+}
+
+.btn-soft-danger {
+  background-color: rgba(var(--vz-danger-rgb), 0.1);
+  color: var(--vz-danger);
+  border: none;
+  &:hover { background-color: var(--vz-danger); color: #fff; }
+}

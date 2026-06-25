@@ -21,9 +21,10 @@ export function getMenuItems(
 ) {
   var MENU: MenuItem[] = [
     { id: 0, label: 'Ana Sayfa', icon: 'ri-home-4-line', link: '/home' },
-    { id: 0, label: 'Daire Yönetimi', icon: 'ri-building-2-line', link: '/daireler', isAdminPage: false },
-    { id: 0, label: 'Sakin Yönetimi', icon: 'ri-group-line', link: '/sakinler', isAdminPage: false },
-    { id: 0, label: 'Aidat Takibi', icon: 'ri-money-dollar-circle-line', link: '/aidatlar', isAdminPage: false },
+    { id: 0, label: 'Apartman Yönetimi', icon: 'ri-building-line', link: '/apartments', isAdminPage: false },
+    { id: 0, label: 'Daire Yönetimi', icon: 'ri-building-2-line', link: '/housing', isAdminPage: false },
+    { id: 0, label: 'Sakin Yönetimi', icon: 'ri-group-line', link: '/floor-resident', isAdminPage: false },
+    { id: 0, label: 'Aidat Takibi', icon: 'ri-money-dollar-circle-line', link: '/dues-transaction', isAdminPage: false },
     { id: 0, label: 'Arıza / Talepler', icon: 'ri-tools-line', link: '/arizalar', isAdminPage: false },
     { id: 0, label: 'Duyurular', icon: 'ri-megaphone-line', link: '/duyurular', isAdminPage: false },
     {

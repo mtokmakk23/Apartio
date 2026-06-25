@@ -1,0 +1,240 @@
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Apartman Yönetimi</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
+          <li class="breadcrumb-item active">Apartman Yönetimi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Toplam Apartman</p>
+          <h3 class="mb-0">{{ apartmanlar.length }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
+            <i class="ri-building-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Apartman Tablosu -->
+  <div [class]="showBlokPanel ? 'col-md-7' : 'col-12'">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0">Apartman Listesi</h5>
+        <button class="btn btn-primary btn-sm btn-label" (click)="yeniApartman()">
+          <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
+          Yeni Apartman Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Yükleniyor...</p>
+        </div>
+        <div class="table-responsive" *ngIf="!loading">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Apartman Adı</th>
+                <th>Tür</th>
+                <th>Şehir / İlçe</th>
+                <th>Son Ödeme</th>
+                <th>Gecikme</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of apartmanlar"
+                [class.table-primary]="blokPanelApartman?.id === a.id">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-xs">
+                      <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                        <i class="ri-building-2-line"></i>
+                      </span>
+                    </div>
+                    <strong>{{ a.name }}</strong>
+                  </div>
+                </td>
+                <td><span class="badge bg-info-subtle text-info">{{ a.type || '—' }}</span></td>
+                <td class="text-muted">{{ a.city }}<span *ngIf="a.town"> / {{ a.town }}</span></td>
+                <td class="text-center">
+                  <span class="badge bg-secondary-subtle text-secondary">{{ a.lastPaymentDay }}. gün</span>
+                </td>
+                <td class="text-center">
+                  <span *ngIf="a.isDelayCompensation" class="badge bg-warning-subtle text-warning">%{{ a.delayCompensationRate }}</span>
+                  <span *ngIf="!a.isDelayCompensation" class="text-muted">—</span>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-soft-success me-1" (click)="aktifYap(a.id!)" title="Aktif Yap">
+                    <i class="ri-checkbox-circle-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-warning me-1" (click)="bloklariGoster(a)" title="Blok Yönetimi">
+                    <i class="ri-layout-grid-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(a)" title="Düzenle">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-danger" (click)="sil(a.id!)" title="Sil">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="apartmanlar.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blok Paneli -->
+  <div class="col-md-5" *ngIf="showBlokPanel">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0">
+          <i class="ri-layout-grid-line me-2 text-warning"></i>
+          {{ blokPanelApartman?.name }} — Bloklar
+        </h5>
+        <button class="btn btn-sm btn-light" (click)="blokPanelKapat()">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        <!-- Blok Ekle -->
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" [(ngModel)]="yeniBlokAdi"
+            placeholder="Blok adı (örn: A Blok)"
+            (keyup.enter)="blokEkle()" />
+          <button class="btn btn-primary" (click)="blokEkle()" [disabled]="blokEkleniyor">
+            <i class="ri-add-line me-1"></i>
+            {{ blokEkleniyor ? 'Ekleniyor...' : 'Ekle' }}
+          </button>
+        </div>
+        <div *ngIf="blokHata" class="alert alert-danger py-2 mb-3">
+          <i class="ri-error-warning-line me-1"></i>{{ blokHata }}
+        </div>
+
+        <!-- Blok Listesi -->
+        <div *ngIf="blokYukleniyor" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+        <div *ngIf="!blokYukleniyor">
+          <div *ngIf="bloklar.length === 0" class="text-center text-muted py-3">
+            Henüz blok eklenmemiş
+          </div>
+          <div class="list-group">
+            <div *ngFor="let blok of bloklar"
+              class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <span class="avatar-xs">
+                  <span class="avatar-title rounded-circle bg-warning-subtle text-warning">
+                    <i class="ri-building-4-line"></i>
+                  </span>
+                </span>
+                <strong>{{ blok.blockName }}</strong>
+              </div>
+              <button class="btn btn-sm btn-soft-danger" (click)="blokSil(blok.id!)" title="Sil">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Apartman Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="ri-building-2-line me-2"></i>
+          {{ seciliApartman ? 'Apartman Düzenle' : 'Yeni Apartman Ekle' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="validationHata" class="alert alert-danger py-2">
+          <i class="ri-error-warning-line me-1"></i>{{ validationHata }}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Apartman Adı <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.name" placeholder="Örn: Güneş Apartmanı" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tür</label>
+            <select class="form-select" [(ngModel)]="form.type">
+              <option *ngFor="let t of TIPLER" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Şehir <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.city" placeholder="İstanbul" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">İlçe</label>
+            <input type="text" class="form-control" [(ngModel)]="form.town" placeholder="Kadıköy" />
+          </div>
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Adres</label>
+            <input type="text" class="form-control" [(ngModel)]="form.adress" placeholder="Mahalle, sokak, no..." />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Posta Kodu</label>
+            <input type="text" class="form-control" [(ngModel)]="form.postalCode" placeholder="34000" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Telefon</label>
+            <input type="text" class="form-control" [(ngModel)]="form.phone" placeholder="0212 000 00 00" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">E-posta</label>
+            <input type="email" class="form-control" [(ngModel)]="form.email" placeholder="info@apartman.com" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Son Ödeme Günü</label>
+            <input type="number" class="form-control" [(ngModel)]="form.lastPaymentDay" min="1" max="31" />
+          </div>
+          <div class="col-md-4 mb-3 d-flex flex-column justify-content-end">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                [(ngModel)]="form.isDelayCompensation" id="delaySwitch" />
+              <label class="form-check-label" for="delaySwitch">Gecikme Faizi</label>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3" *ngIf="form.isDelayCompensation">
+            <label class="form-label">Gecikme Faiz Oranı (%)</label>
+            <input type="number" class="form-control" [(ngModel)]="form.delayCompensationRate" min="0" max="100" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showModal = false">İptal</button>
+        <button class="btn btn-primary" (click)="kaydet()">
+          <i class="ri-save-line me-1"></i> Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

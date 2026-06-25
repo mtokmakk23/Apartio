@@ -1,4 +1,4 @@
-import type { CreateOrUpdateHousing, HousingDto } from './models';
+import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, HousingDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -9,7 +9,33 @@ export class HousingService {
   apiName = 'Default';
   
 
-  createHousingByProp = (prop: CreateOrUpdateHousing, config?: Partial<Rest.Config>) =>
+  changeHousing = (housingId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/housing/change-housing/${housingId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  createBlock = (prop: CreateOrUpdateBlock, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/housing/block',
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  createCircle = (prop: CreateOrUpdateCircle, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/housing/circle',
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  createHousing = (prop: CreateOrUpdateHousing, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/housing/housing',
@@ -18,7 +44,7 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  deleteById = (id: string, config?: Partial<Rest.Config>) =>
+  delete = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/api/app/housing/${id}`,
@@ -26,10 +52,42 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  getById = (id: string, config?: Partial<Rest.Config>) =>
+  deleteBlockById = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/housing/${id}/block`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deleteCircleById = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/housing/${id}/circle`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, HousingDto>({
       method: 'GET',
       url: `/api/app/housing/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getBlockList = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, BlockDto[]>({
+      method: 'GET',
+      url: '/api/app/housing/block-list',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCircleList = (blockId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CircleDto[]>({
+      method: 'GET',
+      url: `/api/app/housing/circle-list/${blockId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -42,7 +100,33 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  updateHousingByIdAndProp = (id: string, prop: CreateOrUpdateHousing, config?: Partial<Rest.Config>) =>
+  getSelectedHousing = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, HousingDto>({
+      method: 'GET',
+      url: '/api/app/housing/selected-housing',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateBlock = (id: string, prop: CreateOrUpdateBlock, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: `/api/app/housing/${id}/block`,
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateCircle = (id: string, prop: CreateOrUpdateCircle, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: `/api/app/housing/${id}/circle`,
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateHousing = (id: string, prop: CreateOrUpdateHousing, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
       url: `/api/app/housing/${id}/housing`,

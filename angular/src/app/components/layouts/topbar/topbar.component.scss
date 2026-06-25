@@ -55,3 +55,19 @@
      
      
   }
+.site-selector-btn {
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.875rem;
+}
+
+.site-dropdown-menu {
+  min-width: 240px;
+  max-height: 320px;
+  overflow-y: auto;
+
+  .dropdown-item.active {
+    background-color: rgba(var(--vz-primary-rgb), 0.1);
+    color: var(--vz-primary);
+  }
+}

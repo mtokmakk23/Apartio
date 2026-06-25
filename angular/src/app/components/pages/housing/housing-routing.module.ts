@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AidatListComponent } from './aidat-list/aidat-list.component';
+import { HousingListComponent } from './housing-list/housing-list.component';
 
 const routes: Routes = [
-  { path: '', component: AidatListComponent }
+  { path: '', component: HousingListComponent }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AidatRoutingModule { }
+export class HousingRoutingModule { }

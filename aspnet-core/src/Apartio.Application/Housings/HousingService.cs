@@ -71,6 +71,7 @@ namespace Apartio.Housings
 
         public async Task ChangeHousingAsync(Guid housingId)
         {
+            var cacheKey = $"user:{CurrentUser.Id}";
             var housing = await _housingRepository.GetListAsync(x => x.Id == housingId);
             if (housing.Count > 0)
             {
@@ -80,11 +81,13 @@ namespace Apartio.Housings
                     var prop = userMatchHousing[0];
                     prop.HousingId = housingId;
                     await _userMatchHousingRepository.UpdateAsync(prop, autoSave: true);
+                    _cache.Remove(cacheKey);
                 }
                 else
                 {
                     var newUserMatchHousing = new UserMatchHousing((Guid)CurrentUser.Id, housingId);
                     await _userMatchHousingRepository.InsertAsync(newUserMatchHousing, autoSave: true);
+                    _cache.Remove(cacheKey);
                 }
 
             }

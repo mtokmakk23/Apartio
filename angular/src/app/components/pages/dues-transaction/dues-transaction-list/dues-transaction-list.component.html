@@ -1,0 +1,249 @@
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Aidat Takibi</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
+          <li class="breadcrumb-item active">Aidat Takibi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Özet Kartlar -->
+<div class="row">
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Toplam Kayıt</p>
+          <h3 class="mb-0">{{ toplamKayit() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
+            <i class="ri-file-list-3-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Toplam Borç</p>
+          <h3 class="mb-0 text-danger">{{ toplamBorc() | number }} ₺</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-danger-subtle text-danger fs-2">
+            <i class="ri-arrow-up-circle-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Toplam Alacak (Ödenen)</p>
+          <h3 class="mb-0 text-success">{{ toplamAlacak() | number }} ₺</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-success-subtle text-success fs-2">
+            <i class="ri-arrow-down-circle-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tablo -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center g-2">
+          <div class="col-md-4">
+            <div class="form-icon right">
+              <input type="search" class="form-control form-control-icon"
+                placeholder="Daire veya sakin ara..."
+                [(ngModel)]="aramaMetni" (input)="filtrele()" />
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenAy" (change)="filtrele()">
+              <option [ngValue]="null">Tüm Aylar</option>
+              <option *ngFor="let ay of aylar.slice(1); let idx = index" [ngValue]="idx + 1">{{ ay }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenBlok" (change)="filtrele()">
+              <option value="">Tüm Bloklar</option>
+              <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 text-end d-flex align-items-center justify-content-end gap-2">
+            <!-- Toplu işlem butonu — sadece seçili kayıt varsa görünür -->
+            <button *ngIf="seciliSayisi() > 0"
+              class="btn btn-success btn-sm btn-label"
+              (click)="topluOdendi()"
+              [disabled]="topluIslemYukleniyor">
+              <i class="ri-checkbox-multiple-line label-icon align-middle fs-16 me-2"></i>
+              <span *ngIf="!topluIslemYukleniyor">{{ seciliSayisi() }} Kayıt → Ödendi</span>
+              <span *ngIf="topluIslemYukleniyor">İşleniyor...</span>
+            </button>
+            <button class="btn btn-primary btn-sm btn-label" (click)="yeniIslem()">
+              <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
+              Yeni Kayıt Ekle
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Yükleniyor...</p>
+        </div>
+        <div class="table-responsive" *ngIf="!loading">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:40px">
+                  <input class="form-check-input" type="checkbox"
+                    [checked]="tumSecili()"
+                    (change)="tumunuSec($event)" />
+                </th>
+                <th>Daire</th>
+                <th>Sakin</th>
+                <th>Ay / Yıl</th>
+                <th>Tür</th>
+                <th>Tutar</th>
+                <th>Borç/Alacak</th>
+                <th>Vade</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let islem of filteredIslemler"
+                [class.table-success]="islem.id && seciliIds.has(islem.id)">
+                <td>
+                  <input class="form-check-input" type="checkbox"
+                    [checked]="islem.id && seciliIds.has(islem.id)"
+                    (change)="satirSec(islem.id!, $event)" />
+                </td>
+                <td>
+                  <span class="badge bg-secondary-subtle text-secondary">{{ islem.circleName || '—' }}</span>
+                </td>
+                <td>{{ islem.floorResidentName || '—' }}</td>
+                <td>{{ ayAdi(islem.month) }} {{ islem.year }}</td>
+                <td class="text-muted">{{ islem.type || '—' }}</td>
+                <td><strong>{{ islem.price | number }} ₺</strong></td>
+                <td>
+                  <span [class]="'badge bg-' + singRengi(islem.sing) + '-subtle text-' + singRengi(islem.sing)">
+                    {{ singEtiketi(islem.sing) }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ tarihFormatla(islem.dueDate) }}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-soft-success me-1" (click)="whatsappHatirlatma(islem)" title="WhatsApp Hatırlatma">
+                    <i class="ri-whatsapp-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-info me-1" (click)="smsHatirlatma(islem)" title="SMS Hatırlatma">
+                    <i class="ri-message-2-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(islem)" title="Düzenle">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-danger" (click)="sil(islem.id!)" title="Sil">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredIslemler.length === 0">
+                <td colspan="9" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ seciliIslem ? 'Kayıt Düzenle' : 'Yeni Aidat Kaydı' }}</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Daire <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.circleId">
+              <option value="">Seçiniz</option>
+              <option *ngFor="let c of circles" [value]="c.id">{{ c.circleName }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Sakin</label>
+            <select class="form-select" [(ngModel)]="form.floorResidentId">
+              <option value="">Seçiniz</option>
+              <option *ngFor="let f of floorResidents" [value]="f.id">{{ f.name }} {{ f.surname }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tutar (₺) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="form.price" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Ay</label>
+            <select class="form-select" [(ngModel)]="form.month">
+              <option *ngFor="let ay of aylar.slice(1); let idx = index" [ngValue]="idx + 1">{{ ay }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Yıl</label>
+            <input type="number" class="form-control" [(ngModel)]="form.year" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tür</label>
+            <input type="text" class="form-control" [(ngModel)]="form.type" placeholder="Aidat, Gecikme Faizi..." />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Borç / Alacak</label>
+            <select class="form-select" [(ngModel)]="form.sing">
+              <option [ngValue]="0">Borç</option>
+              <option [ngValue]="1">Alacak (Ödenen)</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">İşlem Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="form.date_" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Vade Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="form.dueDate" />
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Not</label>
+            <input type="text" class="form-control" [(ngModel)]="form.note" placeholder="Opsiyonel" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showModal = false">İptal</button>
+        <button class="btn btn-primary" (click)="kaydet()">
+          <i class="ri-save-line me-1"></i> Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,316 @@
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Sakin Yönetimi</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
+          <li class="breadcrumb-item active">Sakin Yönetimi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Özet Kartlar -->
+<div class="row">
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Toplam Sakin</p>
+          <h3 class="mb-0">{{ sakinler.length }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
+            <i class="ri-group-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Aktif</p>
+          <h3 class="mb-0 text-success">{{ toplamAktif() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-success-subtle text-success fs-2">
+            <i class="ri-user-follow-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <p class="text-muted mb-1">Pasif</p>
+          <h3 class="mb-0 text-danger">{{ toplamPasif() }}</h3>
+        </div>
+        <div class="avatar-sm">
+          <span class="avatar-title rounded-circle bg-danger-subtle text-danger fs-2">
+            <i class="ri-user-unfollow-line"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tablo -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-md-5">
+            <div class="form-icon right">
+              <input type="search" class="form-control form-control-icon"
+                placeholder="Ad, soyad, telefon, e-posta ara..."
+                [(ngModel)]="aramaMetni" (input)="filtrele()" />
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select" [(ngModel)]="secilenDurum" (change)="filtrele()">
+              <option value="">Tüm Durumlar</option>
+              <option value="Aktif">Aktif</option>
+              <option value="Pasif">Pasif</option>
+            </select>
+          </div>
+          <div class="col-md-4 text-end">
+            <button class="btn btn-primary btn-sm btn-label" (click)="yeniSakinEkle()">
+              <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
+              Yeni Sakin Ekle
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Yükleniyor...</p>
+        </div>
+        <div class="table-responsive" *ngIf="!loading">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Ad Soyad</th>
+                <th>Kimlik No</th>
+                <th>Telefon</th>
+                <th>E-posta</th>
+                <th>Durum</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sakin of filteredSakinler">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-xs me-2">
+                      <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                        {{ (sakin.name || '?').charAt(0) }}{{ (sakin.surname || '').charAt(0) }}
+                      </span>
+                    </div>
+                    <strong>{{ sakin.name }} {{ sakin.surname }}</strong>
+                  </div>
+                </td>
+                <td class="text-muted">{{ sakin.identity || '—' }}</td>
+                <td>{{ sakin.phone || '—' }}</td>
+                <td class="text-muted">{{ sakin.email || '—' }}</td>
+                <td>
+                  <span [class]="'badge bg-' + (sakin.isActive ? 'success' : 'danger') + '-subtle text-' + (sakin.isActive ? 'success' : 'danger')">
+                    {{ sakin.isActive ? 'Aktif' : 'Pasif' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-soft-warning me-1" (click)="ekstreGoster(sakin)" title="Ekstre">
+                    <i class="ri-file-list-3-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-success me-1" (click)="whatsappGonder(sakin)" title="WhatsApp Gönder">
+                    <i class="ri-whatsapp-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-info me-1" (click)="smsGonder(sakin)" title="SMS Gönder">
+                    <i class="ri-message-2-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(sakin)" title="Düzenle">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-danger" (click)="silmeOnayla(sakin.id!)" title="Sil">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredSakinler.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ seciliSakin ? 'Sakin Düzenle' : 'Yeni Sakin Ekle' }}</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Ad <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.name" placeholder="Ad" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Soyad <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.surname" placeholder="Soyad" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Kimlik No</label>
+            <input type="text" class="form-control" [(ngModel)]="form.identity" placeholder="12345678901" maxlength="11" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Telefon <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.phone" placeholder="0500 000 00 00" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">E-posta</label>
+            <input type="email" class="form-control" [(ngModel)]="form.email" placeholder="ornek@email.com" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Durum</label>
+            <select class="form-select" [(ngModel)]="form.isActive">
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showModal = false">İptal</button>
+        <button class="btn btn-primary" (click)="kaydet()">
+          <i class="ri-save-line me-1"></i> Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Silme Onay Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="silmeOnayModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center p-4">
+        <i class="ri-delete-bin-line text-danger" style="font-size: 3rem;"></i>
+        <h5 class="mt-3">Sakin Silinecek!</h5>
+        <p class="text-muted">Bu sakini silmek istediğinize emin misiniz?</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button class="btn btn-light" (click)="silmeOnayModal = false">İptal</button>
+          <button class="btn btn-danger" (click)="silOnay()">Evet, Sil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ekstre Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="ekstreModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0">
+            <i class="ri-file-list-3-line me-2 text-warning"></i>
+            Hesap Ekstresi
+          </h5>
+          <small class="text-muted" *ngIf="seciliEkstreSakin">
+            {{ seciliEkstreSakin.name }} {{ seciliEkstreSakin.surname }}
+          </small>
+        </div>
+        <button type="button" class="btn-close" (click)="ekstreModal = false"></button>
+      </div>
+      <div class="modal-body p-0">
+
+        <!-- Yükleniyor -->
+        <div *ngIf="ekstreYukleniyor" class="text-center py-5">
+          <div class="spinner-border text-warning" role="status"></div>
+          <p class="text-muted mt-2">Ekstre yükleniyor...</p>
+        </div>
+
+        <!-- Veri var -->
+        <div *ngIf="!ekstreYukleniyor">
+
+          <!-- Özet Kartlar -->
+          <div class="row g-0 border-bottom p-3">
+            <div class="col-6 col-md-3 text-center border-end py-2">
+              <p class="text-muted mb-1 fs-12">Toplam Borç</p>
+              <h5 class="text-danger mb-0">{{ ekstreToplam('debit') | number }} ₺</h5>
+            </div>
+            <div class="col-6 col-md-3 text-center border-end py-2">
+              <p class="text-muted mb-1 fs-12">Gecikme Faizi</p>
+              <h5 class="text-warning mb-0">{{ ekstreToplam('delayDebitPrice') | number }} ₺</h5>
+            </div>
+            <div class="col-6 col-md-3 text-center border-end py-2">
+              <p class="text-muted mb-1 fs-12">Toplam Alacak</p>
+              <h5 class="text-success mb-0">{{ ekstreToplam('credit') | number }} ₺</h5>
+            </div>
+            <div class="col-6 col-md-3 text-center py-2">
+              <p class="text-muted mb-1 fs-12">Bakiye</p>
+              <h5 [class]="ekstreToplam('balance') >= 0 ? 'text-danger mb-0' : 'text-success mb-0'">
+                {{ ekstreToplam('balance') | number }} ₺
+              </h5>
+            </div>
+          </div>
+
+          <!-- Tablo -->
+          <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Tarih</th>
+                  <th>Vade</th>
+                  <th>Not</th>
+                  <th class="text-end">Borç (₺)</th>
+                  <th class="text-end">Gecikme (₺)</th>
+                  <th class="text-end">Alacak (₺)</th>
+                  <th class="text-end">Bakiye (₺)</th>
+                  <th class="text-end">Kalan (₺)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let satir of ekstreVerisi">
+                  <td class="text-muted fs-12">{{ satir.date_ ? (satir.date_ | date:'dd.MM.yyyy') : '—' }}</td>
+                  <td class="text-muted fs-12">{{ satir.dueDate ? (satir.dueDate | date:'dd.MM.yyyy') : '—' }}</td>
+                  <td>{{ satir.note || '—' }}</td>
+                  <td class="text-end text-danger">{{ satir.debit | number }}</td>
+                  <td class="text-end text-warning">{{ satir.delayDebitPrice | number }}</td>
+                  <td class="text-end text-success">{{ satir.credit | number }}</td>
+                  <td class="text-end" [class.text-danger]="satir.balance > 0" [class.text-success]="satir.balance <= 0">
+                    {{ satir.balance | number }}
+                  </td>
+                  <td class="text-end">{{ satir.remainder | number }}</td>
+                </tr>
+                <tr *ngIf="ekstreVerisi.length === 0">
+                  <td colspan="8" class="text-center text-muted py-4">Ekstre kaydı bulunamadı</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="ekstreModal = false">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>

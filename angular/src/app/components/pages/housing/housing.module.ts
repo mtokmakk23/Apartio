@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SakinRoutingModule } from './sakin-routing.module';
-import { SakinListComponent } from './sakin-list/sakin-list.component';
+import { HousingRoutingModule } from './housing-routing.module';
+import { HousingListComponent } from './housing-list/housing-list.component';
 import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
-  declarations: [SakinListComponent],
+  declarations: [HousingListComponent],
   imports: [
     CommonModule,
     FormsModule,
-    SakinRoutingModule,
+    HousingRoutingModule,
     SharedModule
   ]
 })
-export class SakinModule { }
+export class HousingModule { }

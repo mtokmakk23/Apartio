@@ -36,6 +36,7 @@ import { CurrentUserServiceService } from 'src/app/services/utils/current-user-s
 
 import introJs from 'intro.js';
 import { HelperService } from 'src/app/services/utils/helper/helper.service';
+import { HousingService, HousingDto } from '@proxy/housings';
 
 @Component({
   selector: 'app-topbar',
@@ -65,6 +66,20 @@ export class TopbarComponent implements OnInit {
   @ViewChild('removenotification') removenotification!: TemplateRef<any>;
   notifyId: any;
 
+  // Site (Housing) Seçici
+  siteler: HousingDto[] = [];
+  seciliSite: HousingDto | null = null;
+  siteDropdownAcik: boolean = false;
+  siteYukleniyor: boolean = false;
+  siteArama: string = '';
+
+  get filteredSiteler(): HousingDto[] {
+    if (!this.siteArama.trim()) return this.siteler;
+    return this.siteler.filter(s =>
+      (s.name || '').toLowerCase().includes(this.siteArama.toLowerCase())
+    );
+  }
+
   constructor(
     @Inject(DOCUMENT) private documentt: any,
     private eventService: EventService,
@@ -80,6 +95,7 @@ export class TopbarComponent implements OnInit {
     private toast: ToasterService,
     private confirmation: ConfirmationService,
     private userService: UserServiceService,
+    private housingService: HousingService,
     
   ) {}
 
@@ -102,6 +118,46 @@ export class TopbarComponent implements OnInit {
       this.flagvalue = val.map(element => element.flag);
     }
 
+    await this.siteleriYukle();
+
+  }
+
+  async siteleriYukle() {
+    this.siteYukleniyor = true;
+    try {
+      const [liste, secili] = await Promise.all([
+        firstValueFrom(this.housingService.getList()),
+        firstValueFrom(this.housingService.getSelectedHousing()),
+      ]);
+      this.siteler = liste;
+      this.seciliSite = secili;
+    } catch (err) {
+      console.error('Siteler yüklenirken hata oluştu:', err);
+    } finally {
+      this.siteYukleniyor = false;
+    }
+  }
+
+  toggleSiteDropdown(event: Event) {
+    event.stopPropagation();
+    this.siteDropdownAcik = !this.siteDropdownAcik;
+  }
+
+  async siteSec(site: HousingDto) {
+    if (!site.id || site.id === this.seciliSite?.id) {
+      this.siteDropdownAcik = false;
+      return;
+    }
+    try {
+      await firstValueFrom(this.housingService.changeHousing(site.id));
+      this.seciliSite = site;
+      this.siteDropdownAcik = false;
+      // Aktif site değiştiği için sayfayı yenileyip tüm verilerin
+      // yeni siteye göre tekrar çekilmesini sağlıyoruz.
+      window.location.reload();
+    } catch (err) {
+      console.error('Site değiştirilirken hata oluştu:', err);
+    }
 
   }
 

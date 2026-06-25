@@ -1081,7 +1081,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Communications.IEmailService"
             },
             "SendMailWithAttacmentBySubjectAndBodyAndToAndBase64FileContentAndFileNameAndIsSendYourself": {
@@ -1218,7 +1218,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Communications.IEmailService"
             }
           }
@@ -1318,8 +1318,615 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Communications.ISmsService"
+            }
+          }
+        },
+        "Apartio.DuesTransactions.DuesTransactionService": {
+          "controllerName": "DuesTransaction",
+          "controllerGroupName": "DuesTransaction",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "Apartio.DuesTransactions.DuesTransactionService",
+          "interfaces": [
+            {
+              "type": "Apartio.DuesTransactions.IDuesTransactionAppService",
+              "name": "IDuesTransactionAppService",
+              "methods": [
+                {
+                  "name": "GetDuesTransactionListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Apartio.DuesTransactions.DuesTransactionDto>",
+                    "typeSimple": "[Apartio.DuesTransactions.DuesTransactionDto]"
+                  }
+                },
+                {
+                  "name": "CreateDuesTransactionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction, Apartio.Application.Contracts",
+                      "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                      "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateDuesTransactionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction, Apartio.Application.Contracts",
+                      "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                      "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteDuesTransactionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetDuesTransactionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Apartio.DuesTransactions.DuesTransactionDto",
+                    "typeSimple": "Apartio.DuesTransactions.DuesTransactionDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateDuesTransactionAsyncByProp": {
+              "uniqueName": "CreateDuesTransactionAsyncByProp",
+              "name": "CreateDuesTransactionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/dues-transaction/dues-transaction",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction, Apartio.Application.Contracts",
+                  "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Apartio.DuesTransactions.IDuesTransactionAppService"
+            },
+            "DeleteDuesTransactionAsyncById": {
+              "uniqueName": "DeleteDuesTransactionAsyncById",
+              "name": "DeleteDuesTransactionAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/dues-transaction/{id}/dues-transaction",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Apartio.DuesTransactions.IDuesTransactionAppService"
+            },
+            "GetDuesTransactionAsyncById": {
+              "uniqueName": "GetDuesTransactionAsyncById",
+              "name": "GetDuesTransactionAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dues-transaction/{id}/dues-transaction",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Apartio.DuesTransactions.DuesTransactionDto",
+                "typeSimple": "Apartio.DuesTransactions.DuesTransactionDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Apartio.DuesTransactions.IDuesTransactionAppService"
+            },
+            "GetDuesTransactionListAsync": {
+              "uniqueName": "GetDuesTransactionListAsync",
+              "name": "GetDuesTransactionListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dues-transaction/dues-transaction-list",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Apartio.DuesTransactions.DuesTransactionDto>",
+                "typeSimple": "[Apartio.DuesTransactions.DuesTransactionDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Apartio.DuesTransactions.IDuesTransactionAppService"
+            },
+            "UpdateDuesTransactionAsyncByIdAndProp": {
+              "uniqueName": "UpdateDuesTransactionAsyncByIdAndProp",
+              "name": "UpdateDuesTransactionAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/dues-transaction/{id}/dues-transaction",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction, Apartio.Application.Contracts",
+                  "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "typeSimple": "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Apartio.DuesTransactions.IDuesTransactionAppService"
+            }
+          }
+        },
+        "Apartio.FloorResidents.FloorResidentService": {
+          "controllerName": "FloorResident",
+          "controllerGroupName": "FloorResident",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "Apartio.FloorResidents.FloorResidentService",
+          "interfaces": [
+            {
+              "type": "Apartio.FloorResidents.IFloorResidentAppService",
+              "name": "IFloorResidentAppService",
+              "methods": [
+                {
+                  "name": "GetFloorResidentListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Apartio.FloorResidents.FloorResidentDto>",
+                    "typeSimple": "[Apartio.FloorResidents.FloorResidentDto]"
+                  }
+                },
+                {
+                  "name": "CreateFloorResidentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.FloorResidents.CreateOrUpdateFloorResident, Apartio.Application.Contracts",
+                      "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                      "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateFloorResidentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.FloorResidents.CreateOrUpdateFloorResident, Apartio.Application.Contracts",
+                      "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                      "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteFloorResidentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetFloorResidentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Apartio.FloorResidents.FloorResidentDto",
+                    "typeSimple": "Apartio.FloorResidents.FloorResidentDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateFloorResidentAsyncByProp": {
+              "uniqueName": "CreateFloorResidentAsyncByProp",
+              "name": "CreateFloorResidentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/floor-resident/floor-resident",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.FloorResidents.CreateOrUpdateFloorResident, Apartio.Application.Contracts",
+                  "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.IFloorResidentAppService"
+            },
+            "DeleteFloorResidentAsyncById": {
+              "uniqueName": "DeleteFloorResidentAsyncById",
+              "name": "DeleteFloorResidentAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/floor-resident/{id}/floor-resident",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.IFloorResidentAppService"
+            },
+            "GetFloorResidentAsyncById": {
+              "uniqueName": "GetFloorResidentAsyncById",
+              "name": "GetFloorResidentAsync",
+              "httpMethod": "GET",
+              "url": "api/app/floor-resident/{id}/floor-resident",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Apartio.FloorResidents.FloorResidentDto",
+                "typeSimple": "Apartio.FloorResidents.FloorResidentDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.IFloorResidentAppService"
+            },
+            "GetFloorResidentListAsync": {
+              "uniqueName": "GetFloorResidentListAsync",
+              "name": "GetFloorResidentListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/floor-resident/floor-resident-list",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Apartio.FloorResidents.FloorResidentDto>",
+                "typeSimple": "[Apartio.FloorResidents.FloorResidentDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.IFloorResidentAppService"
+            },
+            "UpdateFloorResidentAsyncByIdAndProp": {
+              "uniqueName": "UpdateFloorResidentAsyncByIdAndProp",
+              "name": "UpdateFloorResidentAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/floor-resident/{id}/floor-resident",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.FloorResidents.CreateOrUpdateFloorResident, Apartio.Application.Contracts",
+                  "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "typeSimple": "Apartio.FloorResidents.CreateOrUpdateFloorResident",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.IFloorResidentAppService"
+            },
+            "GetExtractByFloorResidentId": {
+              "uniqueName": "GetExtractByFloorResidentId",
+              "name": "GetExtract",
+              "httpMethod": "GET",
+              "url": "api/app/floor-resident/extract/{FloorResidentId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "FloorResidentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "FloorResidentId",
+                  "name": "FloorResidentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Apartio.FloorResidents.FloorResidentExtract>",
+                "typeSimple": "[Apartio.FloorResidents.FloorResidentExtract]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.FloorResidents.FloorResidentService"
             }
           }
         },
@@ -1344,7 +1951,7 @@
                   }
                 },
                 {
-                  "name": "CreateHousing",
+                  "name": "CreateHousingAsync",
                   "parametersOnMethod": [
                     {
                       "name": "prop",
@@ -1361,7 +1968,7 @@
                   }
                 },
                 {
-                  "name": "UpdateHousing",
+                  "name": "UpdateHousingAsync",
                   "parametersOnMethod": [
                     {
                       "name": "id",
@@ -1386,7 +1993,7 @@
                   }
                 },
                 {
-                  "name": "Delete",
+                  "name": "DeleteAsync",
                   "parametersOnMethod": [
                     {
                       "name": "id",
@@ -1403,7 +2010,7 @@
                   }
                 },
                 {
-                  "name": "Get",
+                  "name": "GetAsync",
                   "parametersOnMethod": [
                     {
                       "name": "id",
@@ -1418,14 +2025,182 @@
                     "type": "Apartio.Housings.HousingDto",
                     "typeSimple": "Apartio.Housings.HousingDto"
                   }
+                },
+                {
+                  "name": "ChangeHousingAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "housingId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetSelectedHousingAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "Apartio.Housings.HousingDto",
+                    "typeSimple": "Apartio.Housings.HousingDto"
+                  }
+                },
+                {
+                  "name": "UpdateBlockAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.Housings.CreateOrUpdateBlock, Apartio.Application.Contracts",
+                      "type": "Apartio.Housings.CreateOrUpdateBlock",
+                      "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CreateBlockAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.Housings.CreateOrUpdateBlock, Apartio.Application.Contracts",
+                      "type": "Apartio.Housings.CreateOrUpdateBlock",
+                      "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteBlock",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetBlockListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Apartio.Housings.BlockDto>",
+                    "typeSimple": "[Apartio.Housings.BlockDto]"
+                  }
+                },
+                {
+                  "name": "UpdateCircleAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.Housings.CreateOrUpdateCircle, Apartio.Application.Contracts",
+                      "type": "Apartio.Housings.CreateOrUpdateCircle",
+                      "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CreateCircleAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "prop",
+                      "typeAsString": "Apartio.Housings.CreateOrUpdateCircle, Apartio.Application.Contracts",
+                      "type": "Apartio.Housings.CreateOrUpdateCircle",
+                      "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteCircle",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCircleListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "blockId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Apartio.Housings.CircleDto>",
+                    "typeSimple": "[Apartio.Housings.CircleDto]"
+                  }
                 }
               ]
             }
           ],
           "actions": {
-            "CreateHousingByProp": {
-              "uniqueName": "CreateHousingByProp",
-              "name": "CreateHousing",
+            "CreateHousingAsyncByProp": {
+              "uniqueName": "CreateHousingAsyncByProp",
+              "name": "CreateHousingAsync",
               "httpMethod": "POST",
               "url": "api/app/housing/housing",
               "supportedVersions": [],
@@ -1457,12 +2232,12 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Housings.IHousingAppService"
             },
-            "DeleteById": {
-              "uniqueName": "DeleteById",
-              "name": "Delete",
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
               "httpMethod": "DELETE",
               "url": "api/app/housing/{id}",
               "supportedVersions": [],
@@ -1494,12 +2269,12 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Housings.IHousingAppService"
             },
-            "GetById": {
-              "uniqueName": "GetById",
-              "name": "Get",
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
               "httpMethod": "GET",
               "url": "api/app/housing/{id}",
               "supportedVersions": [],
@@ -1531,7 +2306,7 @@
                 "type": "Apartio.Housings.HousingDto",
                 "typeSimple": "Apartio.Housings.HousingDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Housings.IHousingAppService"
             },
             "GetListAsync": {
@@ -1546,12 +2321,12 @@
                 "type": "System.Collections.Generic.List<Apartio.Housings.HousingDto>",
                 "typeSimple": "[Apartio.Housings.HousingDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Housings.IHousingAppService"
             },
-            "UpdateHousingByIdAndProp": {
-              "uniqueName": "UpdateHousingByIdAndProp",
-              "name": "UpdateHousing",
+            "UpdateHousingAsyncByIdAndProp": {
+              "uniqueName": "UpdateHousingAsyncByIdAndProp",
+              "name": "UpdateHousingAsync",
               "httpMethod": "PUT",
               "url": "api/app/housing/{id}/housing",
               "supportedVersions": [],
@@ -1603,7 +2378,373 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "ChangeHousingAsyncByHousingId": {
+              "uniqueName": "ChangeHousingAsyncByHousingId",
+              "name": "ChangeHousingAsync",
+              "httpMethod": "POST",
+              "url": "api/app/housing/change-housing/{housingId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "housingId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "housingId",
+                  "name": "housingId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "GetSelectedHousingAsync": {
+              "uniqueName": "GetSelectedHousingAsync",
+              "name": "GetSelectedHousingAsync",
+              "httpMethod": "GET",
+              "url": "api/app/housing/selected-housing",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "Apartio.Housings.HousingDto",
+                "typeSimple": "Apartio.Housings.HousingDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "GetBlockListAsync": {
+              "uniqueName": "GetBlockListAsync",
+              "name": "GetBlockListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/housing/block-list",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Apartio.Housings.BlockDto>",
+                "typeSimple": "[Apartio.Housings.BlockDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "DeleteBlockById": {
+              "uniqueName": "DeleteBlockById",
+              "name": "DeleteBlock",
+              "httpMethod": "DELETE",
+              "url": "api/app/housing/{id}/block",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "CreateBlockAsyncByProp": {
+              "uniqueName": "CreateBlockAsyncByProp",
+              "name": "CreateBlockAsync",
+              "httpMethod": "POST",
+              "url": "api/app/housing/block",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.Housings.CreateOrUpdateBlock, Apartio.Application.Contracts",
+                  "type": "Apartio.Housings.CreateOrUpdateBlock",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.Housings.CreateOrUpdateBlock",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "UpdateBlockAsyncByIdAndProp": {
+              "uniqueName": "UpdateBlockAsyncByIdAndProp",
+              "name": "UpdateBlockAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/housing/{id}/block",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.Housings.CreateOrUpdateBlock, Apartio.Application.Contracts",
+                  "type": "Apartio.Housings.CreateOrUpdateBlock",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.Housings.CreateOrUpdateBlock",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateBlock",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "UpdateCircleAsyncByIdAndProp": {
+              "uniqueName": "UpdateCircleAsyncByIdAndProp",
+              "name": "UpdateCircleAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/housing/{id}/circle",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.Housings.CreateOrUpdateCircle, Apartio.Application.Contracts",
+                  "type": "Apartio.Housings.CreateOrUpdateCircle",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.Housings.CreateOrUpdateCircle",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "CreateCircleAsyncByProp": {
+              "uniqueName": "CreateCircleAsyncByProp",
+              "name": "CreateCircleAsync",
+              "httpMethod": "POST",
+              "url": "api/app/housing/circle",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "prop",
+                  "typeAsString": "Apartio.Housings.CreateOrUpdateCircle, Apartio.Application.Contracts",
+                  "type": "Apartio.Housings.CreateOrUpdateCircle",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "prop",
+                  "name": "prop",
+                  "jsonName": null,
+                  "type": "Apartio.Housings.CreateOrUpdateCircle",
+                  "typeSimple": "Apartio.Housings.CreateOrUpdateCircle",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "DeleteCircleById": {
+              "uniqueName": "DeleteCircleById",
+              "name": "DeleteCircle",
+              "httpMethod": "DELETE",
+              "url": "api/app/housing/{id}/circle",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Apartio.Housings.IHousingAppService"
+            },
+            "GetCircleListAsyncByBlockId": {
+              "uniqueName": "GetCircleListAsyncByBlockId",
+              "name": "GetCircleListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/housing/circle-list/{blockId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "blockId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "blockId",
+                  "name": "blockId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Apartio.Housings.CircleDto>",
+                "typeSimple": "[Apartio.Housings.CircleDto]"
+              },
+              "allowAnonymous": false,
               "implementFrom": "Apartio.Housings.IHousingAppService"
             }
           }
@@ -4253,6 +5394,771 @@
     }
   },
   "types": {
+    "Apartio.DuesTransactions.CreateOrUpdateDuesTransaction": {
+      "baseType": "Volo.Abp.ObjectExtending.ExtensibleObject",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "HousingId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlockId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CircleId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FloorResidentId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Price",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Month",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Year",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Date_",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DelayCompensationRate",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Sing",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Note",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.DuesTransactions.DuesTransactionDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "HousingId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlockId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CircleId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FloorResidentId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Price",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Month",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Year",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Date_",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DelayCompensationRate",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Sing",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Note",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.FloorResidents.CreateOrUpdateFloorResident": {
+      "baseType": "Volo.Abp.ObjectExtending.ExtensibleObject",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Surname",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Phone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Identity",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.FloorResidents.FloorResidentDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Surname",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Phone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Identity",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.FloorResidents.FloorResidentExtract": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Date_",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Note",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Debit",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DelayDebitPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Credit",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Balance",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Remainder",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.Housings.BlockDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "HousingId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlockName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.Housings.CircleDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "BlockId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CircleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HomeOwnerId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HirerId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.Housings.CreateOrUpdateBlock": {
+      "baseType": "Volo.Abp.ObjectExtending.ExtensibleObject",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "BlockName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Apartio.Housings.CreateOrUpdateCircle": {
+      "baseType": "Volo.Abp.ObjectExtending.ExtensibleObject",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "BlockId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CircleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HomeOwnerId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HirerId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "Apartio.Housings.CreateOrUpdateHousing": {
       "baseType": "Volo.Abp.ObjectExtending.ExtensibleObject",
       "isEnum": false,
@@ -4349,6 +6255,42 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsDelayCompensation",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DelayCompensationRate",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastPaymentDay",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -4454,6 +6396,42 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsDelayCompensation",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DelayCompensationRate",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastPaymentDay",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

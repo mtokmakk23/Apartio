@@ -32,4 +32,27 @@
   &:hover { background-color: var(--vz-danger); color: #fff; }
 }
 
+.btn-soft-success {
+  background-color: rgba(var(--vz-success-rgb), 0.1);
+  color: var(--vz-success);
+  border: none;
+  &:hover { background-color: var(--vz-success); color: #fff; }
+}
+
+.btn-soft-info {
+  background-color: rgba(var(--vz-info-rgb), 0.1);
+  color: var(--vz-info);
+  border: none;
+  &:hover { background-color: var(--vz-info); color: #fff; }
+}
+
+.fs-12 { font-size: 12px; }
+
+.btn-soft-warning {
+  background-color: rgba(var(--vz-warning-rgb), 0.1);
+  color: var(--vz-warning);
+  border: none;
+  &:hover { background-color: var(--vz-warning); color: #fff; }
+}
+
 .fs-12 { font-size: 12px; }
