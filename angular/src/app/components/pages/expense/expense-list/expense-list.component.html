@@ -1,0 +1,444 @@
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Gider Yönetimi</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
+          <li class="breadcrumb-item active">Gider Yönetimi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Özet Kartlar -->
+<div class="row">
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div><p class="text-muted mb-1">Toplam Borç</p><h3 class="mb-0">{{ toplamGider() | number }} ₺</h3></div>
+        <div class="avatar-sm"><span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2"><i class="ri-money-dollar-box-line"></i></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div><p class="text-muted mb-1">Toplam Ödenen</p><h3 class="mb-0 text-success">{{ toplamOdenen() | number }} ₺</h3></div>
+        <div class="avatar-sm"><span class="avatar-title rounded-circle bg-success-subtle text-success fs-2"><i class="ri-checkbox-circle-line"></i></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div><p class="text-muted mb-1">Toplam Kalan</p><h3 class="mb-0 text-danger">{{ toplamKalan() | number }} ₺</h3></div>
+        <div class="avatar-sm"><span class="avatar-title rounded-circle bg-danger-subtle text-danger fs-2"><i class="ri-time-line"></i></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-animate">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div><p class="text-muted mb-1">Bekleyen</p><h3 class="mb-0 text-warning">{{ bekleyenGider() | number }} ₺</h3></div>
+        <div class="avatar-sm"><span class="avatar-title rounded-circle bg-warning-subtle text-warning fs-2"><i class="ri-error-warning-line"></i></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bütçe Takibi -->
+<div class="row" *ngIf="butceler.length > 0">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0"><i class="ri-pie-chart-line me-2 text-info"></i>Bütçe Takibi</h5></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4" *ngFor="let b of butceler">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">{{ b.kategori }}</span>
+                <span [class]="'text-' + butceRengi(b.kategori)">{{ kategoriHarcama(b.kategori) | number }} / {{ b.butce | number }} ₺</span>
+              </div>
+              <div class="progress" style="height:8px">
+                <div [class]="'progress-bar bg-' + butceRengi(b.kategori)" [style.width]="butceYuzdesi(b.kategori) + '%'"></div>
+              </div>
+              <small *ngIf="butceYuzdesi(b.kategori) >= 100" class="text-danger"><i class="ri-alert-line me-1"></i>Bütçe aşıldı!</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tablo -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center g-2">
+          <div class="col-md-3">
+            <div class="form-icon right">
+              <input type="search" class="form-control form-control-icon"
+                placeholder="Başlık, evrak no, tedarikçi..."
+                [(ngModel)]="aramaMetni" (input)="filtrele()" />
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenKategori" (change)="filtrele()">
+              <option value="">Tüm Kategoriler</option>
+              <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenDurum" (change)="filtrele()">
+              <option value="">Tüm Durumlar</option>
+              <option value="Bekliyor">Bekliyor</option>
+              <option value="Kısmi Ödendi">Kısmi Ödendi</option>
+              <option value="Ödendi">Ödendi</option>
+              <option value="İptal">İptal</option>
+            </select>
+          </div>
+          <div class="col-md-5 text-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
+            <button *ngIf="seciliSayisi() > 0" class="btn btn-success btn-sm btn-label" (click)="topluOdendi()">
+              <i class="ri-checkbox-multiple-line label-icon align-middle fs-16 me-2"></i>{{ seciliSayisi() }} → Ödendi
+            </button>
+            <button class="btn btn-secondary btn-sm btn-label" (click)="excelExport()">
+              <i class="ri-file-excel-line label-icon align-middle fs-16 me-2"></i>Excel
+            </button>
+            <button class="btn btn-info btn-sm btn-label text-white" (click)="showRaporModal = true">
+              <i class="ri-bar-chart-line label-icon align-middle fs-16 me-2"></i>Rapor
+            </button>
+            <button class="btn btn-warning btn-sm btn-label" (click)="butceAc()">
+              <i class="ri-pie-chart-line label-icon align-middle fs-16 me-2"></i>Bütçe
+            </button>
+            <button class="btn btn-primary btn-sm btn-label" (click)="yeniGider()">
+              <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>Yeni Gider
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-nowrap align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:40px">
+                  <input class="form-check-input" type="checkbox" [checked]="tumSecili()" (change)="tumunuSec($event)" />
+                </th>
+                <th>Evrak No</th>
+                <th>Başlık</th>
+                <th>Kategori</th>
+                <th>Tedarikçi / Cari</th>
+                <th>Kasa</th>
+                <th>Borç</th>
+                <th>Ödenen</th>
+                <th class="text-danger">Kalan</th>
+                <th>Tarih</th>
+                <th>Vade</th>
+                <th>Fatura</th>
+                <th>Durum</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of filteredGiderler" [class.table-success]="seciliIds.has(g.id)">
+                <td>
+                  <input class="form-check-input" type="checkbox"
+                    [checked]="seciliIds.has(g.id)" (change)="satirSec(g.id, $event)" />
+                </td>
+                <td class="text-muted">{{ g.evrakNo || '—' }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-xs">
+                      <span class="avatar-title rounded-circle bg-danger-subtle text-danger">
+                        <i [class]="g.tekrarlayan ? 'ri-repeat-line' : 'ri-bill-line'"></i>
+                      </span>
+                    </div>
+                    <div>
+                      <strong>{{ g.baslik }}</strong>
+                      <span *ngIf="g.tekrarlayan" class="badge bg-secondary-subtle text-secondary ms-1 fs-10">{{ g.tekrarPeriyot }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge bg-info-subtle text-info">{{ g.kategori }}</span></td>
+                <td class="text-muted">{{ g.tedarikci || g.cariHesap || '—' }}</td>
+                <td class="text-muted">{{ g.kasa || '—' }}</td>
+                <td><strong>{{ g.tutar | number }} ₺</strong></td>
+                <td class="text-success">{{ (g.odenen || 0) | number }} ₺</td>
+                <td><strong class="text-danger">{{ kalan(g) | number }} ₺</strong></td>
+                <td class="text-muted">{{ tarihFormatla(g.tarih) }}</td>
+                <td class="text-muted">{{ tarihFormatla(g.vadeTarihi) }}</td>
+                <td>
+                  <button *ngIf="g.faturaDosyasi" class="btn btn-sm btn-soft-info" (click)="faturaIndir(g)" title="Faturayı İndir">
+                    <i class="ri-download-line"></i>
+                  </button>
+                  <span *ngIf="!g.faturaDosyasi" class="text-muted">—</span>
+                </td>
+                <td>
+                  <span [class]="'badge bg-' + durumRengi(g.durum) + '-subtle text-' + durumRengi(g.durum)">
+                    {{ g.durum }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button *ngIf="g.durum !== 'Ödendi' && g.durum !== 'İptal'"
+                    class="btn btn-sm btn-soft-success me-1" (click)="odemeAc(g)" title="Ödeme Yap">
+                    <i class="ri-money-dollar-circle-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(g)" title="Düzenle">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                  <button class="btn btn-sm btn-soft-danger" (click)="sil(g.id)" title="Sil">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </td>
+              </tr>
+              <!-- Toplam satırı -->
+              <tr *ngIf="filteredGiderler.length > 0" class="table-light fw-bold">
+                <td colspan="6" class="text-end">TOPLAM</td>
+                <td>{{ toplamGider() | number }} ₺</td>
+                <td class="text-success">{{ toplamOdenen() | number }} ₺</td>
+                <td class="text-danger">{{ toplamKalan() | number }} ₺</td>
+                <td colspan="5"></td>
+              </tr>
+              <tr *ngIf="filteredGiderler.length === 0">
+                <td colspan="14" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="ri-bill-line me-2"></i>{{ seciliGider ? 'Gider Düzenle' : 'Yeni Gider Ekle' }}</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="validationHata" class="alert alert-danger py-2">
+          <i class="ri-error-warning-line me-1"></i>{{ validationHata }}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Başlık <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.baslik" placeholder="Örn: Haziran Temizlik Gideri" />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Evrak No</label>
+            <input type="text" class="form-control" [(ngModel)]="form.evrakNo" placeholder="Fatura/Evrak No" />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" [(ngModel)]="form.kategori">
+              <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tutar (₺) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="form.tutar" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tedarikçi / Firma</label>
+            <input type="text" class="form-control" [(ngModel)]="form.tedarikci" placeholder="Firma adı" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Cari Hesap</label>
+            <input type="text" class="form-control" [(ngModel)]="form.cariHesap" placeholder="Cari hesap" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Kasa</label>
+            <select class="form-select" [(ngModel)]="form.kasa">
+              <option *ngFor="let k of kasalar" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Gider Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="form.tarih" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Vade Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="form.vadeTarihi" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Durum</label>
+            <select class="form-select" [(ngModel)]="form.durum">
+              <option value="Bekliyor">Bekliyor</option>
+              <option value="Kısmi Ödendi">Kısmi Ödendi</option>
+              <option value="Ödendi">Ödendi</option>
+              <option value="İptal">İptal</option>
+            </select>
+          </div>
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Fatura / Belge</label>
+            <input type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" (change)="onFaturaSecildi($event)" />
+            <small *ngIf="form.faturaDosyasiAdi" class="text-success"><i class="ri-file-line me-1"></i>{{ form.faturaDosyasiAdi }}</small>
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Açıklama</label>
+            <input type="text" class="form-control" [(ngModel)]="form.aciklama" placeholder="Opsiyonel" />
+          </div>
+          <div class="col-12 mb-2"><hr class="my-1"/><small class="text-muted">Tekrarlayan Gider</small></div>
+          <div class="col-md-4 mb-3">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="form.tekrarlayan" id="tekrarSwitch" />
+              <label class="form-check-label" for="tekrarSwitch">Otomatik Tekrarla</label>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3" *ngIf="form.tekrarlayan">
+            <label class="form-label">Periyot</label>
+            <select class="form-select" [(ngModel)]="form.tekrarPeriyot">
+              <option value="Aylık">Aylık</option>
+              <option value="Yıllık">Yıllık</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showModal = false">İptal</button>
+        <button class="btn btn-primary" (click)="kaydet()"><i class="ri-save-line me-1"></i>Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ödeme Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showOdemeModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success-subtle">
+        <h5 class="modal-title text-success"><i class="ri-money-dollar-circle-line me-2"></i>Ödeme Yap</h5>
+        <button type="button" class="btn-close" (click)="showOdemeModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info py-2 mb-3">
+          <strong>{{ odemeGider?.baslik }}</strong> —
+          Kalan: <strong>{{ odemeGider ? kalan(odemeGider) : 0 | number }} ₺</strong>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Ödeme Tutarı (₺)</label>
+            <input type="number" class="form-control" [(ngModel)]="odemeForm.tutar" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Kasa</label>
+            <select class="form-select" [(ngModel)]="odemeForm.kasa">
+              <option *ngFor="let k of kasalar" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Ödeme Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="odemeForm.tarih" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Açıklama</label>
+            <input type="text" class="form-control" [(ngModel)]="odemeForm.aciklama" placeholder="Opsiyonel" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showOdemeModal = false">İptal</button>
+        <button class="btn btn-success" (click)="odemeKaydet()"><i class="ri-save-line me-1"></i>Ödemeyi Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rapor Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showRaporModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info-subtle">
+        <h5 class="modal-title text-info"><i class="ri-bar-chart-line me-2"></i>Gider Raporu</h5>
+        <button type="button" class="btn-close" (click)="showRaporModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Ay</label>
+            <select class="form-select" [(ngModel)]="raporAy">
+              <option *ngFor="let ay of aylar.slice(1); let idx = index" [ngValue]="idx + 1">{{ ay }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Yıl</label>
+            <input type="number" class="form-control" [(ngModel)]="raporYil" />
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="alert alert-info py-2 mb-0 w-100 text-center">Toplam: <strong>{{ raporToplamTutar() | number }} ₺</strong></div>
+          </div>
+        </div>
+        <div *ngIf="raporGosterData().length === 0" class="text-center text-muted py-4">Bu dönemde gider kaydı bulunamadı</div>
+        <div *ngFor="let item of raporGosterData()" class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span><strong>{{ item[0] }}</strong></span>
+            <span class="text-danger"><strong>{{ item[1] | number }} ₺</strong> <span class="text-muted ms-2">({{ raporBarYuzdesi(item[1]) }}%)</span></span>
+          </div>
+          <div class="progress" style="height:12px">
+            <div class="progress-bar bg-danger" [style.width]="raporBarYuzdesi(item[1]) + '%'"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showRaporModal = false">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bütçe Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showButceModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title text-warning"><i class="ri-pie-chart-line me-2"></i>Bütçe Yönetimi</h5>
+        <button type="button" class="btn-close" (click)="showButceModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" [(ngModel)]="butceForm.kategori">
+              <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Bütçe (₺)</label>
+            <input type="number" class="form-control" [(ngModel)]="butceForm.butce" />
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-warning w-100" (click)="butceKaydet()"><i class="ri-save-line"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="butceler.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Kategori</th><th>Bütçe</th><th>Harcanan</th><th>Kalan</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of butceler">
+                <td>{{ b.kategori }}</td>
+                <td>{{ b.butce | number }} ₺</td>
+                <td [class]="'text-' + butceRengi(b.kategori)">{{ kategoriHarcama(b.kategori) | number }} ₺</td>
+                <td>{{ (b.butce - kategoriHarcama(b.kategori)) | number }} ₺</td>
+                <td><button class="btn btn-sm btn-soft-danger" (click)="butceSil(b.kategori)"><i class="ri-delete-bin-line"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="butceler.length === 0" class="text-center text-muted py-3">Henüz bütçe tanımlanmamış</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showButceModal = false">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>

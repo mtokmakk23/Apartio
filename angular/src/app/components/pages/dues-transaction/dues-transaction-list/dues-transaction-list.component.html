@@ -48,7 +48,7 @@
     <div class="card card-animate">
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
-          <p class="text-muted mb-1">Toplam Alacak (Ödenen)</p>
+          <p class="text-muted mb-1">Toplam Alacak</p>
           <h3 class="mb-0 text-success">{{ toplamAlacak() | number }} ₺</h3>
         </div>
         <div class="avatar-sm">
@@ -67,7 +67,7 @@
     <div class="card">
       <div class="card-header">
         <div class="row align-items-center g-2">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="form-icon right">
               <input type="search" class="form-control form-control-icon"
                 placeholder="Daire veya sakin ara..."
@@ -87,8 +87,7 @@
               <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
-          <div class="col-md-4 text-end d-flex align-items-center justify-content-end gap-2">
-            <!-- Toplu işlem butonu — sadece seçili kayıt varsa görünür -->
+          <div class="col-md-5 text-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
             <button *ngIf="seciliSayisi() > 0"
               class="btn btn-success btn-sm btn-label"
               (click)="topluOdendi()"
@@ -96,6 +95,14 @@
               <i class="ri-checkbox-multiple-line label-icon align-middle fs-16 me-2"></i>
               <span *ngIf="!topluIslemYukleniyor">{{ seciliSayisi() }} Kayıt → Ödendi</span>
               <span *ngIf="topluIslemYukleniyor">İşleniyor...</span>
+            </button>
+            <button class="btn btn-warning btn-sm btn-label" (click)="gecmisModalAc()">
+              <i class="ri-history-line label-icon align-middle fs-16 me-2"></i>
+              Tahakkuk Geçmişi
+            </button>
+            <button class="btn btn-info btn-sm btn-label text-white" (click)="tahakkukModalAc()">
+              <i class="ri-calendar-check-line label-icon align-middle fs-16 me-2"></i>
+              Toplu Tahakkuk
             </button>
             <button class="btn btn-primary btn-sm btn-label" (click)="yeniIslem()">
               <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
@@ -115,8 +122,7 @@
               <tr>
                 <th style="width:40px">
                   <input class="form-check-input" type="checkbox"
-                    [checked]="tumSecili()"
-                    (change)="tumunuSec($event)" />
+                    [checked]="tumSecili()" (change)="tumunuSec($event)" />
                 </th>
                 <th>Daire</th>
                 <th>Sakin</th>
@@ -136,9 +142,7 @@
                     [checked]="islem.id && seciliIds.has(islem.id)"
                     (change)="satirSec(islem.id!, $event)" />
                 </td>
-                <td>
-                  <span class="badge bg-secondary-subtle text-secondary">{{ islem.circleName || '—' }}</span>
-                </td>
+                <td><span class="badge bg-secondary-subtle text-secondary">{{ islem.circleName || '—' }}</span></td>
                 <td>{{ islem.floorResidentName || '—' }}</td>
                 <td>{{ ayAdi(islem.month) }} {{ islem.year }}</td>
                 <td class="text-muted">{{ islem.type || '—' }}</td>
@@ -150,10 +154,10 @@
                 </td>
                 <td class="text-muted">{{ tarihFormatla(islem.dueDate) }}</td>
                 <td class="text-center">
-                  <button class="btn btn-sm btn-soft-success me-1" (click)="whatsappHatirlatma(islem)" title="WhatsApp Hatırlatma">
+                  <button class="btn btn-sm btn-soft-success me-1" (click)="whatsappHatirlatma(islem)" title="WhatsApp">
                     <i class="ri-whatsapp-line"></i>
                   </button>
-                  <button class="btn btn-sm btn-soft-info me-1" (click)="smsHatirlatma(islem)" title="SMS Hatırlatma">
+                  <button class="btn btn-sm btn-soft-info me-1" (click)="smsHatirlatma(islem)" title="SMS">
                     <i class="ri-message-2-line"></i>
                   </button>
                   <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(islem)" title="Düzenle">
@@ -175,7 +179,7 @@
   </div>
 </div>
 
-<!-- Ekle/Düzenle Modal -->
+<!-- Tekil Ekle/Düzenle Modal -->
 <div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -186,20 +190,27 @@
       <div class="modal-body">
         <div class="row">
           <div class="col-md-6 mb-3">
+            <label class="form-label">Blok</label>
+            <select class="form-select" [(ngModel)]="secilenModalBlok" (change)="form.circleId = ''">
+              <option value="">Tüm Bloklar</option>
+              <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
             <label class="form-label">Daire <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.circleId">
+            <select class="form-select" [(ngModel)]="form.circleId" [disabled]="!secilenModalBlok">
               <option value="">Seçiniz</option>
-              <option *ngFor="let c of circles" [value]="c.id">{{ c.circleName }}</option>
+              <option *ngFor="let c of filteredModalCircles" [value]="c.id">{{ c.circleName }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Sakin</label>
-            <select class="form-select" [(ngModel)]="form.floorResidentId">
+            <select class="form-select" [(ngModel)]="form.floorResidentId" [disabled]="!form.circleId">
               <option value="">Seçiniz</option>
               <option *ngFor="let f of floorResidents" [value]="f.id">{{ f.name }} {{ f.surname }}</option>
             </select>
           </div>
-          <div class="col-md-4 mb-3">
+          <div class="col-md-6 mb-3">
             <label class="form-label">Tutar (₺) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" [(ngModel)]="form.price" />
           </div>
@@ -215,7 +226,7 @@
           </div>
           <div class="col-md-4 mb-3">
             <label class="form-label">Tür</label>
-            <input type="text" class="form-control" [(ngModel)]="form.type" placeholder="Aidat, Gecikme Faizi..." />
+            <input type="text" class="form-control" [(ngModel)]="form.type" placeholder="Aidat, Gecikme..." />
           </div>
           <div class="col-md-4 mb-3">
             <label class="form-label">Borç / Alacak</label>
@@ -243,6 +254,166 @@
         <button class="btn btn-primary" (click)="kaydet()">
           <i class="ri-save-line me-1"></i> Kaydet
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toplu Tahakkuk Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showTahakkukModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info-subtle">
+        <h5 class="modal-title text-info">
+          <i class="ri-calendar-check-line me-2"></i>Toplu Tahakkuk
+        </h5>
+        <button type="button" class="btn-close" (click)="showTahakkukModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Sonuç mesajı -->
+        <div *ngIf="tahakkukSonuc" class="alert alert-success mb-3">
+          <i class="ri-check-circle-line me-2"></i>
+          <strong>{{ tahakkukSonuc.basarili }}</strong> daireye tahakkuk uygulandı.
+          <span *ngIf="tahakkukSonuc.hatali > 0" class="text-danger ms-2">
+            {{ tahakkukSonuc.hatali }} daireye uygulanamadı.
+          </span>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Ay <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="tahakkukForm.ay">
+              <option *ngFor="let ay of aylar.slice(1); let idx = index" [ngValue]="idx + 1">{{ ay }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Yıl <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="tahakkukForm.yil" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tutar (₺) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="tahakkukForm.tutar" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tür</label>
+            <select class="form-select" [(ngModel)]="tahakkukForm.tur">
+              <option value="Aidat">Aidat</option>
+              <option value="Doğalgaz">Doğalgaz</option>
+              <option value="Su">Su</option>
+              <option value="Elektrik">Elektrik</option>
+              <option value="Asansör Bakım">Asansör Bakım</option>
+              <option value="Temizlik">Temizlik</option>
+              <option value="Demirbaş">Demirbaş</option>
+              <option value="Yönetim Gideri">Yönetim Gideri</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Vade Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="tahakkukForm.vadeTarihi" />
+          </div>
+
+          <!-- Blok seçimi -->
+          <div class="col-12 mb-3">
+            <label class="form-label">Uygulama Kapsamı</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="tumBloklar"
+                [(ngModel)]="tahakkukForm.tumBloklar" />
+              <label class="form-check-label" for="tumBloklar">
+                <strong>Tüm Bloklar</strong> ({{ circles.length }} daire)
+              </label>
+            </div>
+            <div *ngIf="!tahakkukForm.tumBloklar" class="d-flex flex-wrap gap-2 mt-2">
+              <div *ngFor="let b of bloklar">
+                <button type="button"
+                  [class]="tahakkukBlokSecili(b.id!) ? 'btn btn-sm btn-info' : 'btn btn-sm btn-outline-info'"
+                  (click)="tahakkukBlokToggle(b.id!)">
+                  {{ b.blockName }}
+                  <span class="badge bg-white text-info ms-1">
+                    {{ blokDaireSayisi(b.id!) }} daire
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Özet -->
+          <div class="col-12">
+            <div class="alert alert-warning py-2 mb-0">
+              <i class="ri-information-line me-1"></i>
+              <strong>
+                {{ tahakkukHedefSayisi() }}
+              </strong>
+              daireye
+              <strong>{{ tahakkukForm.tutar | number }} ₺</strong>
+              borç tahakkuk ettirilecek.
+              (Toplam: <strong>{{ (tahakkukForm.tutar * tahakkukHedefSayisi()) | number }} ₺</strong>)
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showTahakkukModal = false">Kapat</button>
+        <button class="btn btn-info text-white" (click)="tahakkukUygula()" [disabled]="tahakkukYukleniyor">
+          <span *ngIf="tahakkukYukleniyor">
+            <span class="spinner-border spinner-border-sm me-1"></span>İşleniyor...
+          </span>
+          <span *ngIf="!tahakkukYukleniyor">
+            <i class="ri-calendar-check-line me-1"></i>Tahakkuku Uygula
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tahakkuk Geçmişi Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showGecmisModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title text-warning">
+          <i class="ri-history-line me-2"></i>Tahakkuk Geçmişi
+        </h5>
+        <button type="button" class="btn-close" (click)="showGecmisModal = false"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Dönem</th>
+                <th>Tür</th>
+                <th>Tutar</th>
+                <th>Daire Adedi</th>
+                <th>Toplam</th>
+                <th>Tarih</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of tahakkukGecmis">
+                <td>
+                  <span class="badge bg-primary-subtle text-primary">
+                    {{ ayAdi(g.ay) }} {{ g.yil }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ g.tur }}</td>
+                <td><strong>{{ g.tutar | number }} ₺</strong></td>
+                <td class="text-center">
+                  <span class="badge bg-info-subtle text-info">{{ g.daireAdedi }} daire</span>
+                </td>
+                <td><strong class="text-danger">{{ (g.tutar * g.daireAdedi) | number }} ₺</strong></td>
+                <td class="text-muted">{{ tarihFormatla(g.tarih) }}</td>
+              </tr>
+              <tr *ngIf="tahakkukGecmis.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">Henüz tahakkuk kaydı bulunamadı</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showGecmisModal = false">Kapat</button>
       </div>
     </div>
   </div>

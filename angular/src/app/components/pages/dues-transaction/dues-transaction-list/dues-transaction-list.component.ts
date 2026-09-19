@@ -5,6 +5,15 @@ import { FloorResidentService, FloorResidentDto } from '@proxy/floor-residents';
 import { firstValueFrom } from 'rxjs';
 import { DuesTransactionViewModel, AY_ISIMLERI } from '../dues-transaction.model';
 
+export interface TahakkukGecmis {
+  ay: number;
+  yil: number;
+  tutar: number;
+  daireAdedi: number;
+  tarih: string;
+  tur: string;
+}
+
 @Component({
   selector: 'app-dues-transaction-list',
   templateUrl: './dues-transaction-list.component.html',
@@ -31,6 +40,25 @@ export class DuesTransactionListComponent implements OnInit {
   topluIslemYukleniyor: boolean = false;
 
   form: Partial<CreateOrUpdateDuesTransaction> = {};
+  secilenModalBlok: string = '';
+
+  // Toplu Tahakkuk
+  showTahakkukModal: boolean = false;
+  tahakkukForm = {
+    ay: new Date().getMonth() + 1,
+    yil: new Date().getFullYear(),
+    tutar: 0,
+    tur: 'Aidat',
+    vadeTarihi: '',
+    secilenBloklar: [] as string[],
+    tumBloklar: true,
+  };
+  tahakkukYukleniyor: boolean = false;
+  tahakkukSonuc: { basarili: number; hatali: number } | null = null;
+
+  // Tahakkuk Geçmişi
+  showGecmisModal: boolean = false;
+  tahakkukGecmis: TahakkukGecmis[] = [];
 
   aylar = AY_ISIMLERI;
   loading: boolean = false;
@@ -67,6 +95,7 @@ export class DuesTransactionListComponent implements OnInit {
       const islemListesi = await firstValueFrom(this.duesTransactionService.getDuesTransactionList());
       this.islemler = islemListesi.map(i => this.zenginlestir(i));
       this.filtrele();
+      this.tahakkukGecmisHesapla();
     } catch (err) {
       console.error('Veriler yuklenirken hata olustu:', err);
     } finally {
@@ -96,6 +125,7 @@ export class DuesTransactionListComponent implements OnInit {
     });
   }
 
+  // ---- Toplu seçim ----
   tumSecili(): boolean {
     return this.filteredIslemler.length > 0 &&
       this.filteredIslemler.every(i => i.id && this.seciliIds.has(i.id));
@@ -117,14 +147,11 @@ export class DuesTransactionListComponent implements OnInit {
     this.seciliIds = yeni;
   }
 
-  seciliSayisi(): number {
-    return this.seciliIds.size;
-  }
+  seciliSayisi(): number { return this.seciliIds.size; }
 
   async topluOdendi() {
     if (this.seciliIds.size === 0) return;
     if (!confirm(this.seciliIds.size + ' kayit "Alacak (Odendi)" olarak isaretlenecek. Onayliyor musunuz?')) return;
-
     this.topluIslemYukleniyor = true;
     try {
       for (const id of Array.from(this.seciliIds)) {
@@ -157,9 +184,16 @@ export class DuesTransactionListComponent implements OnInit {
     }
   }
 
+  get filteredModalCircles() {
+    if (!this.secilenModalBlok) return this.circles;
+    return this.circles.filter(c => c.blockId === this.secilenModalBlok);
+  }
+
+  // ---- Tekil kayıt ----
   yeniIslem() {
     this.seciliIslem = null;
     const now = new Date();
+    this.secilenModalBlok = '';
     this.form = {
       housingId: this.seciliHousing?.id,
       month: now.getMonth() + 1,
@@ -175,19 +209,14 @@ export class DuesTransactionListComponent implements OnInit {
 
   duzenle(islem: DuesTransactionViewModel) {
     this.seciliIslem = islem;
+    this.secilenModalBlok = this.circles.find(c => c.id === islem.circleId)?.blockId || '';
     this.form = { ...islem };
     this.showModal = true;
   }
 
   async kaydet() {
-    if (!this.form.housingId && !this.seciliHousing?.id) {
-      alert('Secili bir site bulunamadi.');
-      return;
-    }
-    if (!this.form.price || this.form.price <= 0) {
-      alert('Tutar 0dan buyuk olmalidir.');
-      return;
-    }
+    if (!this.form.housingId && !this.seciliHousing?.id) { alert('Secili bir site bulunamadi.'); return; }
+    if (!this.form.price || this.form.price <= 0) { alert('Tutar 0dan buyuk olmalidir.'); return; }
     try {
       const now = new Date();
       const prop: CreateOrUpdateDuesTransaction = {
@@ -227,9 +256,127 @@ export class DuesTransactionListComponent implements OnInit {
     }
   }
 
-  ayAdi(ay?: number): string {
-    return ay ? (this.aylar[ay] || '') : '';
+  // ---- Toplu Tahakkuk ----
+  tahakkukModalAc() {
+    const now = new Date();
+    this.tahakkukForm = {
+      ay: now.getMonth() + 1,
+      yil: now.getFullYear(),
+      tutar: 0,
+      tur: 'Aidat',
+      vadeTarihi: '',
+      secilenBloklar: [],
+      tumBloklar: true,
+    };
+    this.tahakkukSonuc = null;
+    this.showTahakkukModal = true;
   }
+
+  tahakkukBlokToggle(blokId: string) {
+    const idx = this.tahakkukForm.secilenBloklar.indexOf(blokId);
+    if (idx >= 0) {
+      this.tahakkukForm.secilenBloklar.splice(idx, 1);
+    } else {
+      this.tahakkukForm.secilenBloklar.push(blokId);
+    }
+  }
+
+  tahakkukBlokSecili(blokId: string): boolean {
+    return this.tahakkukForm.secilenBloklar.includes(blokId);
+  }
+
+  async tahakkukUygula() {
+    if (!this.tahakkukForm.tutar || this.tahakkukForm.tutar <= 0) {
+      alert('Tutar 0\'dan büyük olmalıdır.');
+      return;
+    }
+
+    const hedefCircleler = this.tahakkukForm.tumBloklar
+      ? this.circles
+      : this.circles.filter(c => c.blockId && this.tahakkukForm.secilenBloklar.includes(c.blockId));
+
+    if (hedefCircleler.length === 0) {
+      alert('Tahakkuk uygulanacak daire bulunamadı.');
+      return;
+    }
+
+    if (!confirm(hedefCircleler.length + ' daireye ' + this.tahakkukForm.tutar + ' TL tahakkuk uygulanacak. Onaylıyor musunuz?')) return;
+
+    this.tahakkukYukleniyor = true;
+    this.tahakkukSonuc = null;
+    let basarili = 0;
+    let hatali = 0;
+    const now = new Date();
+
+    for (const circle of hedefCircleler) {
+      try {
+        const prop: CreateOrUpdateDuesTransaction = {
+          housingId: this.seciliHousing?.id,
+          blockId: circle.blockId || undefined,
+          circleId: circle.id || undefined,
+          floorResidentId: circle.homeOwnerId || circle.hirerId || undefined,
+          price: this.tahakkukForm.tutar,
+          month: this.tahakkukForm.ay,
+          year: this.tahakkukForm.yil,
+          date_: now.toISOString().split('T')[0],
+          delayCompensationRate: 0,
+          type: this.tahakkukForm.tur,
+          sing: this.BORC,
+          note: this.tahakkukForm.ay + '/' + this.tahakkukForm.yil + ' ' + this.tahakkukForm.tur + ' tahakkuku',
+          dueDate: this.tahakkukForm.vadeTarihi || undefined,
+        };
+        await firstValueFrom(this.duesTransactionService.createDuesTransaction(prop));
+        basarili++;
+      } catch (err) {
+        hatali++;
+      }
+    }
+
+    this.tahakkukSonuc = { basarili, hatali };
+    this.tahakkukYukleniyor = false;
+    await this.verileriYukle();
+  }
+
+  // ---- Tahakkuk Geçmişi ----
+  tahakkukGecmisHesapla() {
+    const gruplar = new Map<string, TahakkukGecmis>();
+    for (const islem of this.islemler) {
+      if (islem.sing !== this.BORC) continue;
+      const anahtar = islem.month + '-' + islem.year + '-' + (islem.type || 'Aidat');
+      if (!gruplar.has(anahtar)) {
+        gruplar.set(anahtar, {
+          ay: islem.month || 0,
+          yil: islem.year || 0,
+          tutar: islem.price || 0,
+          daireAdedi: 1,
+          tarih: islem.date_ || '',
+          tur: islem.type || 'Aidat',
+        });
+      } else {
+        const g = gruplar.get(anahtar)!;
+        g.daireAdedi++;
+      }
+    }
+    this.tahakkukGecmis = Array.from(gruplar.values())
+      .sort((a, b) => b.yil - a.yil || b.ay - a.ay);
+  }
+
+  blokDaireSayisi(blokId: string): number {
+    return this.circles.filter(c => c.blockId === blokId).length;
+  }
+
+  tahakkukHedefSayisi(): number {
+    if (this.tahakkukForm.tumBloklar) return this.circles.length;
+    return this.circles.filter(c => c.blockId && this.tahakkukForm.secilenBloklar.includes(c.blockId)).length;
+  }
+
+  gecmisModalAc() {
+    this.tahakkukGecmisHesapla();
+    this.showGecmisModal = true;
+  }
+
+  // ---- Yardımcı ----
+  ayAdi(ay?: number): string { return ay ? (this.aylar[ay] || '') : ''; }
 
   tarihFormatla(tarih?: string): string {
     if (!tarih) return '—';
@@ -238,17 +385,10 @@ export class DuesTransactionListComponent implements OnInit {
     return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
   }
 
-  toplamBorc() {
-    return this.islemler.filter(i => i.sing === this.BORC).reduce((s, i) => s + (i.price || 0), 0);
-  }
-
-  toplamAlacak() {
-    return this.islemler.filter(i => i.sing === this.ALACAK).reduce((s, i) => s + (i.price || 0), 0);
-  }
-
+  toplamBorc() { return this.islemler.filter(i => i.sing === this.BORC).reduce((s, i) => s + (i.price || 0), 0); }
+  toplamAlacak() { return this.islemler.filter(i => i.sing === this.ALACAK).reduce((s, i) => s + (i.price || 0), 0); }
   toplamKayit() { return this.islemler.length; }
-
-  singEtiketi(sing: number): string { return sing === this.BORC ? 'Borc' : 'Alacak'; }
+  singEtiketi(sing: number): string { return sing === this.BORC ? 'Borç' : 'Alacak'; }
   singRengi(sing: number): string { return sing === this.BORC ? 'danger' : 'success'; }
 
   whatsappHatirlatma(islem: DuesTransactionViewModel) {

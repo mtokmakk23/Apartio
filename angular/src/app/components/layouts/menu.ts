@@ -25,6 +25,7 @@ export function getMenuItems(
     { id: 0, label: 'Daire Yönetimi', icon: 'ri-building-2-line', link: '/housing', isAdminPage: false },
     { id: 0, label: 'Sakin Yönetimi', icon: 'ri-group-line', link: '/floor-resident', isAdminPage: false },
     { id: 0, label: 'Aidat Takibi', icon: 'ri-money-dollar-circle-line', link: '/dues-transaction', isAdminPage: false },
+    { id: 0, label: 'Gider Yönetimi', icon: 'ri-bill-line', link: '/expense', isAdminPage: false },
     { id: 0, label: 'Arıza / Talepler', icon: 'ri-tools-line', link: '/arizalar', isAdminPage: false },
     { id: 0, label: 'Duyurular', icon: 'ri-megaphone-line', link: '/duyurular', isAdminPage: false },
     {

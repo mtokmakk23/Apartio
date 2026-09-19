@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { TURKEY_CITIES, TurkeyCity } from '../turkey-cities';
 import { HousingService, CreateOrUpdateHousing, HousingDto, BlockDto, CreateOrUpdateBlock } from '@proxy/housings';
 import { firstValueFrom } from 'rxjs';
 
@@ -15,6 +16,19 @@ export class ApartmentsListComponent implements OnInit {
   validationHata = '';
   form: Partial<CreateOrUpdateHousing> = {};
 
+  // Ek alanlar (QR için, backend'de yok)
+  formVergiDairesi = '';
+  formVergiNo = '';
+  formSigortaNo = '';
+
+  // QR modal
+  showQrModal = false;
+  qrApartman: HousingDto | null = null;
+  qrVergiDairesi = '';
+  qrVergiNo = '';
+  qrSigortaNo = '';
+  qrCanvas: HTMLCanvasElement | null = null;
+
   // Blok yönetimi
   showBlokPanel = false;
   blokPanelApartman: HousingDto | null = null;
@@ -25,8 +39,22 @@ export class ApartmentsListComponent implements OnInit {
   blokHata = '';
 
   readonly TIPLER = ['Site', 'Apartman', 'Rezidans', 'Villa'];
+  readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
+  ilceler: string[] = [];
 
   constructor(private housingService: HousingService) {}
+
+  sehirDegisti() {
+    const secili = this.sehirler.find(s => s.il === this.form.city);
+    this.ilceler = secili ? secili.ilceler : [];
+    this.form.town = '';
+  }
+
+  ilceleriniYukle(city?: string) {
+    if (!city) { this.ilceler = []; return; }
+    const secili = this.sehirler.find(s => s.il === city);
+    this.ilceler = secili ? secili.ilceler : [];
+  }
 
   async ngOnInit(): Promise<void> {
     await this.verileriYukle();
@@ -46,14 +74,21 @@ export class ApartmentsListComponent implements OnInit {
   yeniApartman() {
     this.seciliApartman = null;
     this.validationHata = '';
-    this.form = { isDelayCompensation: false, delayCompensationRate: 0, lastPaymentDay: 10, type: 'Apartman' };
+    this.formVergiDairesi = '';
+    this.formVergiNo = '';
+    this.formSigortaNo = '';
+    this.form = { isDelayCompensation: false, delayCompensationRate: 0, type: 'Apartman' };
     this.showModal = true;
   }
 
   duzenle(apartman: HousingDto) {
     this.seciliApartman = apartman;
     this.validationHata = '';
+    this.formVergiDairesi = (apartman as any).vergiDairesi || '';
+    this.formVergiNo = (apartman as any).vergiNo || '';
+    this.formSigortaNo = (apartman as any).sigortaNo || '';
     this.form = { ...apartman };
+    this.ilceleriniYukle(apartman.city);
     this.showModal = true;
   }
 
@@ -107,6 +142,42 @@ export class ApartmentsListComponent implements OnInit {
     }
   }
 
+  // ---- QR Kod ----
+
+  qrGoster(apartman: HousingDto) {
+    this.qrApartman = apartman;
+    this.qrVergiDairesi = (apartman as any).vergiDairesi || '';
+    this.qrVergiNo = (apartman as any).vergiNo || '';
+    this.qrSigortaNo = (apartman as any).sigortaNo || '';
+    this.showQrModal = true;
+    setTimeout(() => this.qrOlustur(), 100);
+  }
+
+  qrUrl = '';
+
+  qrOlustur() {
+    if (!this.qrApartman) return;
+    const a = this.qrApartman;
+    const bilgi = [
+      'Apartman: ' + (a.name || ''),
+      'Adres: ' + [a.adress, a.town, a.city].filter(Boolean).join(', '),
+      'Vergi Dairesi: ' + this.qrVergiDairesi,
+      'Vergi No: ' + this.qrVergiNo,
+    ].filter(s => !s.endsWith(': ')).join('\n');
+
+    const encoded = encodeURIComponent(bilgi);
+    this.qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encoded;
+  }
+
+  qrIndir() {
+    if (!this.qrUrl) return;
+    const link = document.createElement('a');
+    link.download = (this.qrApartman?.name || 'apartman') + '-qr.png';
+    link.href = this.qrUrl;
+    link.target = '_blank';
+    link.click();
+  }
+
   // ---- Blok Yönetimi ----
 
   async bloklariGoster(apartman: HousingDto) {
@@ -120,7 +191,6 @@ export class ApartmentsListComponent implements OnInit {
   async bloklariYukle(housingId: string) {
     this.blokYukleniyor = true;
     try {
-      // Önce bu housing'i aktif yap, sonra blokları çek
       await firstValueFrom(this.housingService.changeHousing(housingId));
       this.bloklar = await firstValueFrom(this.housingService.getBlockList());
     } catch (err) {
