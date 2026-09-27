@@ -204,7 +204,12 @@
                 <td class="text-danger">{{ toplamKalan() | number }} ₺</td>
                 <td colspan="5"></td>
               </tr>
-              <tr *ngIf="filteredGiderler.length === 0">
+              <tr *ngIf="loading">
+                <td colspan="14" class="text-center text-muted py-4">
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Giderler yükleniyor...
+                </td>
+              </tr>
+              <tr *ngIf="!loading && filteredGiderler.length === 0">
                 <td colspan="14" class="text-center text-muted py-4">Kayıt bulunamadı</td>
               </tr>
             </tbody>
@@ -304,7 +309,11 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-light" (click)="showModal = false">İptal</button>
-        <button class="btn btn-primary" (click)="kaydet()"><i class="ri-save-line me-1"></i>Kaydet</button>
+        <button class="btn btn-primary" (click)="kaydet()" [disabled]="isSaving">
+          <i class="ri-save-line me-1" *ngIf="!isSaving"></i>
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="isSaving" role="status"></span>
+          Kaydet
+        </button>
       </div>
     </div>
   </div>
