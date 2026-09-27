@@ -362,5 +362,13 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Angular cache
+# Angular
 .angular/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
