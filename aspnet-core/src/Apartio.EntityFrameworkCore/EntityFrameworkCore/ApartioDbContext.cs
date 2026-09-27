@@ -1,13 +1,9 @@
-﻿
 using Apartio.DuesTransactions;
+using Apartio.Expenses;
 using Apartio.FloorResidents;
 using Apartio.Housings;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Threading;
-using System.Threading.Tasks;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -29,23 +25,24 @@ namespace Apartio.EntityFrameworkCore;
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName("Default")]
 public class ApartioDbContext :
-    AbpDbContext<ApartioDbContext>,
-    IIdentityDbContext,
-    ITenantManagementDbContext
+	AbpDbContext<ApartioDbContext>,
+	IIdentityDbContext,
+	ITenantManagementDbContext
 {
 
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
-    public DbSet<Housing> Housings { get; set; }
-    public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
-    public DbSet<Block> Blocks { get; set; }
-    public DbSet<Circle> Circles { get; set; }
-    public DbSet<FloorResident> FloorResidents { get; set; }
-    public DbSet<DuesTransaction> DuesTransactions { get; set; }
+	/* Add DbSet properties for your Aggregate Roots / Entities here. */
+	public DbSet<Housing> Housings { get; set; }
+	public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
+	public DbSet<Block> Blocks { get; set; }
+	public DbSet<Circle> Circles { get; set; }
+	public DbSet<FloorResident> FloorResidents { get; set; }
+	public DbSet<DuesTransaction> DuesTransactions { get; set; }
+	public DbSet<Expense> Expenses { get; set; }
 
 
-    #region Entities from the modules
+	#region Entities from the modules
 
-    /* Notice: We only implemented IIdentityDbContext and ITenantManagementDbContext
+	/* Notice: We only implemented IIdentityDbContext and ITenantManagementDbContext
      * and replaced them for this DbContext. This allows you to perform JOIN
      * queries for the entities of these modules over the repositories easily. You
      * typically don't need that for other modules. But, if you need, you can
@@ -56,79 +53,87 @@ public class ApartioDbContext :
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
 
-    //Identity
-    public DbSet<IdentityUser> Users { get; set; }
-    public DbSet<IdentityRole> Roles { get; set; }
-    public DbSet<IdentityClaimType> ClaimTypes { get; set; }
-    public DbSet<OrganizationUnit> OrganizationUnits { get; set; }
-    public DbSet<IdentitySecurityLog> SecurityLogs { get; set; }
-    public DbSet<IdentityLinkUser> LinkUsers { get; set; }
-    public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
-    public DbSet<IdentitySession> Sessions { get; set; }
-    // Tenant Management
-    public DbSet<Tenant> Tenants { get; set; }
-    public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
+	//Identity
+	public DbSet<IdentityUser> Users { get; set; }
+	public DbSet<IdentityRole> Roles { get; set; }
+	public DbSet<IdentityClaimType> ClaimTypes { get; set; }
+	public DbSet<OrganizationUnit> OrganizationUnits { get; set; }
+	public DbSet<IdentitySecurityLog> SecurityLogs { get; set; }
+	public DbSet<IdentityLinkUser> LinkUsers { get; set; }
+	public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
+	public DbSet<IdentitySession> Sessions { get; set; }
+	// Tenant Management
+	public DbSet<Tenant> Tenants { get; set; }
+	public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
-    #endregion
+	#endregion
 
-    public ApartioDbContext(DbContextOptions<ApartioDbContext> options)
-        : base(options)
-    {
-    }
+	public ApartioDbContext(DbContextOptions<ApartioDbContext> options)
+		: base(options)
+	{
+	}
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
+	protected override void OnModelCreating(ModelBuilder builder)
+	{
+		base.OnModelCreating(builder);
 
-        foreach (var property in builder.Model
-        .GetEntityTypes()
-        .SelectMany(t => t.GetProperties())
-        .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
-        {
-            property.SetColumnType("decimal(18,10)");
-        }
-        /* Include modules to your migration db context */
+		foreach (var property in builder.Model
+		.GetEntityTypes()
+		.SelectMany(t => t.GetProperties())
+		.Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+		{
+			property.SetColumnType("decimal(18,10)");
+		}
+		/* Include modules to your migration db context */
 
-        builder.ConfigurePermissionManagement();
-        builder.ConfigureSettingManagement();
-        builder.ConfigureBackgroundJobs();
-        builder.ConfigureAuditLogging();
-        builder.ConfigureIdentity();
-        builder.ConfigureOpenIddict();
-        builder.ConfigureFeatureManagement();
-        builder.ConfigureTenantManagement();
+		builder.ConfigurePermissionManagement();
+		builder.ConfigureSettingManagement();
+		builder.ConfigureBackgroundJobs();
+		builder.ConfigureAuditLogging();
+		builder.ConfigureIdentity();
+		builder.ConfigureOpenIddict();
+		builder.ConfigureFeatureManagement();
+		builder.ConfigureTenantManagement();
 
-        /* Configure your own tables/entities inside here */
+		/* Configure your own tables/entities inside here */
 
-        builder.Entity<Housing>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Housings"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();       
-        });
-        builder.Entity<UserMatchHousing>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "UserMatchHousings"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();
-        });
-        builder.Entity<Block>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Blocks"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();
-        });
-        builder.Entity<Circle>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Circles"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();
-        });
-        builder.Entity<FloorResident>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "FloorResidents"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();
-        });
-        builder.Entity<DuesTransaction>(typeBuilder =>
-        {
-            typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "DuesTransactions"), ApartioConsts.DbSchema);
-            typeBuilder.ConfigureByConvention();
-        });
-    }
+		builder.Entity<Housing>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Housings"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<UserMatchHousing>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "UserMatchHousings"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<Block>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Blocks"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<Circle>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Circles"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<FloorResident>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "FloorResidents"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<DuesTransaction>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "DuesTransactions"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<Expense>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Expenses"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+
+			typeBuilder.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+			typeBuilder.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
+		});
+	}
 }

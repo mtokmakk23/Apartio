@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ExpenseModel, ButceModel, GIDER_KATEGORILERI, KASA_LISTESI } from '../expense.model';
 import { HousingService, HousingDto } from '@proxy/housings';
+import { ExpenseService, CreateOrUpdateExpense, ExpenseDto, ExpenseStatus } from '@proxy/expenses';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -21,6 +22,8 @@ export class ExpenseListComponent implements OnInit {
   seciliGider: ExpenseModel | null = null;
   validationHata = '';
   form: Partial<ExpenseModel> = {};
+  isSaving = false;
+  loading = false;
 
   seciliIds: Set<string> = new Set();
 
@@ -42,22 +45,39 @@ export class ExpenseListComponent implements OnInit {
   readonly aylar = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
     'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-  constructor(private housingService: HousingService) {}
+  constructor(
+    private housingService: HousingService,
+    private expenseService: ExpenseService
+  ) {}
 
   async ngOnInit() {
     try { this.seciliHousing = await firstValueFrom(this.housingService.getSelectedHousing()); } catch {}
-    this.verileriYukle();
+    await this.verileriYukle();
     this.butceleriYukle();
     this.tekrarlayanGiderleriKontrolEt();
   }
 
-  verileriYukle() {
-    const key = 'expense_' + (this.seciliHousing?.id || 'default');
-    const stored = localStorage.getItem(key);
-    this.giderler = stored ? JSON.parse(stored) : [];
-    // odenen alanı yoksa 0 yap
-    this.giderler = this.giderler.map(g => ({ ...g, odenen: g.odenen || 0 }));
-    this.filtrele();
+  async verileriYukle() {
+    this.loading = true;
+    try {
+      const dtoList = await firstValueFrom(this.expenseService.getList());
+      if (dtoList && dtoList.length > 0) {
+        this.giderler = dtoList.map(d => this.mapDtoToModel(d));
+      } else {
+        const key = 'expense_' + (this.seciliHousing?.id || 'default');
+        const stored = localStorage.getItem(key);
+        this.giderler = stored ? JSON.parse(stored) : [];
+        this.giderler = this.giderler.map(g => ({ ...g, odenen: g.odenen || 0 }));
+      }
+    } catch {
+      const key = 'expense_' + (this.seciliHousing?.id || 'default');
+      const stored = localStorage.getItem(key);
+      this.giderler = stored ? JSON.parse(stored) : [];
+      this.giderler = this.giderler.map(g => ({ ...g, odenen: g.odenen || 0 }));
+    } finally {
+      this.loading = false;
+      this.filtrele();
+    }
   }
 
   kaydetLS() {
@@ -153,30 +173,39 @@ export class ExpenseListComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  kaydet() {
+  async kaydet() {
     this.validationHata = '';
     if (!this.form.baslik?.trim()) { this.validationHata = 'Başlık zorunludur.'; return; }
     if (!this.form.tutar || this.form.tutar <= 0) { this.validationHata = 'Tutar 0\'dan büyük olmalıdır.'; return; }
 
-    if (this.seciliGider) {
-      const idx = this.giderler.findIndex(g => g.id === this.seciliGider!.id);
-      if (idx >= 0) this.giderler[idx] = { ...this.seciliGider, ...this.form } as ExpenseModel;
-    } else {
-      const yeni: ExpenseModel = {
-        ...this.form,
-        id: Date.now().toString(),
-        housingId: this.seciliHousing?.id,
-        odenen: 0,
-      } as ExpenseModel;
-      this.giderler.unshift(yeni);
+    this.isSaving = true;
+    const prop = this.mapModelToCreateOrUpdate(this.form);
+
+    try {
+      if (this.seciliGider?.id && !this.isTempId(this.seciliGider.id)) {
+        await firstValueFrom(this.expenseService.update(this.seciliGider.id, prop));
+      } else {
+        await firstValueFrom(this.expenseService.create(prop));
+      }
+      this.showModal = false;
+      await this.verileriYukle();
+    } catch (err: any) {
+      this.validationHata = err?.error?.error?.message || 'Gider kaydedilirken bir hata oluştu.';
+    } finally {
+      this.isSaving = false;
     }
-    this.kaydetLS();
-    this.filtrele();
-    this.showModal = false;
   }
 
-  sil(id: string) {
+  async sil(id: string) {
     if (!confirm('Bu gideri silmek istediğinize emin misiniz?')) return;
+    try {
+      if (!this.isTempId(id)) {
+        await firstValueFrom(this.expenseService.delete(id));
+      }
+      await this.verileriYukle();
+    } catch (err: any) {
+      alert(err?.error?.error?.message || 'Silme işlemi sırasında hata oluştu.');
+    }
     this.giderler = this.giderler.filter(g => g.id !== id);
     this.kaydetLS();
     this.filtrele();
@@ -194,23 +223,36 @@ export class ExpenseListComponent implements OnInit {
     this.showOdemeModal = true;
   }
 
-  odemeKaydet() {
+  async odemeKaydet() {
     if (!this.odemeGider) return;
-    const idx = this.giderler.findIndex(g => g.id === this.odemeGider!.id);
-    if (idx < 0) return;
-    const g = this.giderler[idx];
+    const g = this.odemeGider;
     const yeniOdenen = (g.odenen || 0) + this.odemeForm.tutar;
-    g.odenen = Math.min(yeniOdenen, g.tutar);
-    g.kasa = this.odemeForm.kasa;
-    g.odemeTarihi = this.odemeForm.tarih;
-    if (g.odenen >= g.tutar) {
-      g.durum = 'Ödendi';
-    } else if (g.odenen > 0) {
-      g.durum = 'Kısmi Ödendi';
+    const odenen = Math.min(yeniOdenen, g.tutar);
+    let durum: ExpenseModel['durum'] = g.durum;
+    if (odenen >= g.tutar) {
+      durum = 'Ödendi';
+    } else if (odenen > 0) {
+      durum = 'Kısmi Ödendi';
     }
-    this.kaydetLS();
-    this.filtrele();
-    this.showOdemeModal = false;
+
+    const updatedModel: ExpenseModel = {
+      ...g,
+      odenen: odenen,
+      durum: durum,
+      kasa: this.odemeForm.kasa,
+      odemeTarihi: this.odemeForm.tarih,
+    };
+
+    try {
+      if (!this.isTempId(g.id)) {
+        const prop = this.mapModelToCreateOrUpdate(updatedModel);
+        await firstValueFrom(this.expenseService.update(g.id, prop));
+      }
+      this.showOdemeModal = false;
+      await this.verileriYukle();
+    } catch (err: any) {
+      alert(err?.error?.error?.message || 'Ödeme kaydedilirken hata oluştu.');
+    }
   }
 
   // Toplu seçim
@@ -234,19 +276,27 @@ export class ExpenseListComponent implements OnInit {
 
   seciliSayisi() { return this.seciliIds.size; }
 
-  topluOdendi() {
+  async topluOdendi() {
     if (!confirm(this.seciliIds.size + ' gider "Ödendi" olarak işaretlenecek. Onaylıyor musunuz?')) return;
     const now = new Date().toISOString().split('T')[0];
-    this.giderler.forEach(g => {
-      if (this.seciliIds.has(g.id)) {
+    for (const id of Array.from(this.seciliIds)) {
+      const g = this.giderler.find(x => x.id === id);
+      if (g) {
         g.durum = 'Ödendi';
         g.odenen = g.tutar;
         g.odemeTarihi = now;
+        if (!this.isTempId(g.id)) {
+          try {
+            await firstValueFrom(this.expenseService.update(g.id, this.mapModelToCreateOrUpdate(g)));
+          } catch {
+            // ignore error in batch update
+          }
+        }
       }
-    });
+    }
     this.seciliIds = new Set();
     this.kaydetLS();
-    this.filtrele();
+    await this.verileriYukle();
   }
 
   // Excel export
@@ -355,5 +405,76 @@ export class ExpenseListComponent implements OnInit {
     link.href = gider.faturaDosyasi;
     link.download = gider.faturaDosyasiAdi || 'fatura';
     link.click();
+  }
+
+  private mapDtoToModel(dto: ExpenseDto): ExpenseModel {
+    const durumMap: Record<number, ExpenseModel['durum']> = {
+      [ExpenseStatus.Pending]: 'Bekliyor',
+      [ExpenseStatus.PartiallyPaid]: 'Kısmi Ödendi',
+      [ExpenseStatus.Paid]: 'Ödendi',
+      [ExpenseStatus.Cancelled]: 'İptal',
+    };
+
+    return {
+      id: dto.id,
+      baslik: dto.title,
+      kategori: dto.category,
+      tutar: dto.amount,
+      odenen: dto.paidAmount || 0,
+      tarih: dto.expenseDate ? dto.expenseDate.split('T')[0] : '',
+      vadeTarihi: dto.dueDate ? dto.dueDate.split('T')[0] : undefined,
+      odemeTarihi: dto.paymentDate ? dto.paymentDate.split('T')[0] : undefined,
+      tedarikci: dto.supplier,
+      cariHesap: dto.currentAccount,
+      kasa: dto.cashDesk,
+      evrakNo: dto.documentNo,
+      aciklama: dto.description,
+      durum: durumMap[dto.status] || 'Bekliyor',
+      housingId: dto.housingId,
+      tekrarlayan: dto.isRecurring,
+      tekrarPeriyot: dto.recurringPeriod as any,
+      faturaDosyasi: dto.invoiceFile,
+      faturaDosyasiAdi: dto.invoiceFileName,
+    };
+  }
+
+  private mapModelToCreateOrUpdate(form: Partial<ExpenseModel>): CreateOrUpdateExpense {
+    const statusMap: Record<string, ExpenseStatus> = {
+      'Bekliyor': ExpenseStatus.Pending,
+      'Kısmi Ödendi': ExpenseStatus.PartiallyPaid,
+      'Ödendi': ExpenseStatus.Paid,
+      'İptal': ExpenseStatus.Cancelled,
+    };
+
+    const expenseDateIso = form.tarih ? new Date(form.tarih).toISOString() : new Date().toISOString();
+    const dueDateIso = form.vadeTarihi ? new Date(form.vadeTarihi).toISOString() : undefined;
+    const paymentDateIso = form.odemeTarihi ? new Date(form.odemeTarihi).toISOString() : undefined;
+
+    return {
+      housingId: this.seciliHousing?.id,
+      title: form.baslik?.trim() || '',
+      category: form.kategori || 'Diğer',
+      amount: Number(form.tutar) || 0,
+      paidAmount: Number(form.odenen) || 0,
+      expenseDate: expenseDateIso,
+      dueDate: dueDateIso,
+      paymentDate: paymentDateIso,
+      supplier: form.tedarikci?.trim() || undefined,
+      currentAccount: form.cariHesap?.trim() || undefined,
+      cashDesk: form.kasa || undefined,
+      documentNo: form.evrakNo?.trim() || undefined,
+      description: form.aciklama?.trim() || undefined,
+      status: form.durum ? (statusMap[form.durum] ?? ExpenseStatus.Pending) : ExpenseStatus.Pending,
+      isRecurring: !!form.tekrarlayan,
+      recurringPeriod: form.tekrarlayan ? (form.tekrarPeriyot || undefined) : undefined,
+      invoiceFile: form.faturaDosyasi || undefined,
+      invoiceFileName: form.faturaDosyasiAdi || undefined,
+    };
+  }
+
+  private isTempId(id?: string): boolean {
+    if (!id) return true;
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return !guidRegex.test(id);
   }
 }
