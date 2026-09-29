@@ -13,6 +13,7 @@ public class ApartioApplicationAutoMapperProfile : Profile
 
 		CreateMap<Housing, HousingDto>().ReverseMap();
 		CreateMap<Housing, CreateOrUpdateHousing>().ReverseMap();
+		CreateMap<HousingType, HousingTypeDto>().ReverseMap();
 
 		CreateMap<Block, BlockDto>().ReverseMap();
 		CreateMap<Block, CreateOrUpdateBlock>().ReverseMap();

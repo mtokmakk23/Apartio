@@ -69,7 +69,7 @@
                     <strong>{{ a.name }}</strong>
                   </div>
                 </td>
-                <td><span class="badge bg-info-subtle text-info">{{ a.type || '—' }}</span></td>
+                <td><span class="badge bg-info-subtle text-info">{{ a.typeName || getHousingTypeLabel(a.type) }}</span></td>
                 <td class="text-muted">{{ a.city }}<span *ngIf="a.town"> / {{ a.town }}</span></td>
                 <td class="text-center">
                   <span *ngIf="a.isDelayCompensation" class="badge bg-warning-subtle text-warning">%{{ a.delayCompensationRate }}</span>
@@ -177,7 +177,12 @@
           <div class="col-md-6 mb-3">
             <label class="form-label">Tür</label>
             <select class="form-select" [(ngModel)]="form.type">
-              <option *ngFor="let t of TIPLER" [value]="t">{{ t }}</option>
+              <ng-container *ngIf="tipler.length > 0; else fallbackTipler">
+                <option *ngFor="let t of tipler" [ngValue]="t.id">{{ t.name }}</option>
+              </ng-container>
+              <ng-template #fallbackTipler>
+                <option *ngFor="let t of TIPLER" [ngValue]="t.value">{{ t.label }}</option>
+              </ng-template>
             </select>
           </div>
           <div class="col-md-6 mb-3">
@@ -276,7 +281,7 @@
             <div class="d-flex align-items-center gap-2 mb-2">
               <i class="ri-building-2-line text-primary fs-4"></i>
               <strong class="fs-6">{{ qrApartman?.name }}</strong>
-              <span class="badge bg-info-subtle text-info ms-auto">{{ qrApartman?.type }}</span>
+              <span class="badge bg-info-subtle text-info ms-auto">{{ qrApartman?.typeName || getHousingTypeLabel(qrApartman?.type) }}</span>
             </div>
             <div class="row g-1" style="font-size:12px">
               <div class="col-6 text-muted" *ngIf="qrApartman?.city">

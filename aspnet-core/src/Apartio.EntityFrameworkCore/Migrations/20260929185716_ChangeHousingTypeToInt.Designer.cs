@@ -4,6 +4,7 @@ using Apartio.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Apartio.Migrations
 {
     [DbContext(typeof(ApartioDbContext))]
-    partial class ApartioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260929185716_ChangeHousingTypeToInt")]
+    partial class ChangeHousingTypeToInt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -460,54 +463,7 @@ namespace Apartio.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Type");
-
                     b.ToTable("AppHousings", (string)null);
-                });
-
-            modelBuilder.Entity("Apartio.Housings.HousingType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppHousingTypes", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Site"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Apartman"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Daire"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Rezidans"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Villa"
-                        });
                 });
 
             modelBuilder.Entity("Apartio.Housings.UserMatchHousing", b =>
@@ -2360,17 +2316,6 @@ namespace Apartio.Migrations
                     b.HasKey("TenantId", "Name");
 
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
-                });
-
-            modelBuilder.Entity("Apartio.Housings.Housing", b =>
-                {
-                    b.HasOne("Apartio.Housings.HousingType", "HousingType")
-                        .WithMany()
-                        .HasForeignKey("Type")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HousingType");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
