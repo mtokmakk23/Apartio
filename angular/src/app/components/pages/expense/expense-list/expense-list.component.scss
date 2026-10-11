@@ -2,3 +2,82 @@
 .btn-soft-warning { background-color: rgba(247,184,75,.1); border:none; color:#f7b84b; &:hover{background-color:rgba(247,184,75,.2);} }
 .btn-soft-danger  { background-color: rgba(240,101,72,.1); border:none; color:#f06548; &:hover{background-color:rgba(240,101,72,.2);} }
 .btn-soft-primary { background-color: rgba(64,81,137,.1); border:none; color:#405189; &:hover{background-color:rgba(64,81,137,.2);} }
+
+.action-btn {
+  &::after,
+  &::before {
+    display: none !important;
+    content: none !important;
+  }
+}
+
+// Gider Tablosu Kolon Oranları ve Kırpma (Ellipsis)
+.expense-table {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .d-flex {
+    min-width: 0;
+
+    .text-truncate {
+      min-width: 0;
+    }
+  }
+
+  thead th,
+  tbody td {
+    &:nth-child(1) {
+      width: 38px;
+      min-width: 38px;
+      max-width: 38px;
+      text-align: center;
+      overflow: visible;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+
+    &:nth-child(13) {
+      width: 44px;
+      min-width: 44px;
+      max-width: 44px;
+      text-align: center;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+
+    &:last-child {
+      width: 48px;
+      min-width: 48px;
+      max-width: 48px;
+      overflow: visible;
+      text-align: center;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+  }
+
+  thead th {
+    &:nth-child(1)  { width: 38px; }
+    &:nth-child(2)  { width: 7%; }
+    &:nth-child(3)  { width: auto; }
+    &:nth-child(4)  { width: 7%; }
+    &:nth-child(5)  { width: 10%; }
+    &:nth-child(6)  { width: 7%; }
+    &:nth-child(7)  { width: 7%; }
+    &:nth-child(8)  { width: 7%; }
+    &:nth-child(9)  { width: 7%; }
+    &:nth-child(10) { width: 7%; }
+    &:nth-child(11) { width: 6%; }
+    &:nth-child(12) { width: 6%; }
+    &:nth-child(13) { width: 44px; }
+    &:nth-child(14) { width: 48px; }
+  }
+}
+
