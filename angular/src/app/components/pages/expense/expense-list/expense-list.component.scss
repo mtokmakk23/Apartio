@@ -64,20 +64,20 @@
   }
 
   thead th {
-    &:nth-child(1)  { width: 38px; }
-    &:nth-child(2)  { width: 7%; }
+    &:nth-child(1)  { width: 35px; }
+    &:nth-child(2)  { width: auto; }
     &:nth-child(3)  { width: auto; }
-    &:nth-child(4)  { width: 7%; }
-    &:nth-child(5)  { width: 10%; }
-    &:nth-child(6)  { width: 7%; }
-    &:nth-child(7)  { width: 7%; }
-    &:nth-child(8)  { width: 7%; }
-    &:nth-child(9)  { width: 7%; }
-    &:nth-child(10) { width: 7%; }
-    &:nth-child(11) { width: 6%; }
-    &:nth-child(12) { width: 6%; }
-    &:nth-child(13) { width: 44px; }
-    &:nth-child(14) { width: 48px; }
+    &:nth-child(4)  { width: auto; }
+    &:nth-child(5)  { width: 14%; }
+    &:nth-child(6)  { width: auto; }
+    &:nth-child(7)  { width: auto; }
+    &:nth-child(8)  { width: 5%; }
+    &:nth-child(9)  { width: 5%; }
+    &:nth-child(10) { width: 5%; }
+    &:nth-child(11) { width: 7%; }
+    &:nth-child(12) { width: 7%; }
+    &:nth-child(13) { width: 5%; }
+    &:nth-child(14) { width: 5%; }
   }
 }
 
