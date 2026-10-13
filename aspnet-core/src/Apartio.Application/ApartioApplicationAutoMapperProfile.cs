@@ -1,3 +1,4 @@
+using Apartio.Assets;
 using Apartio.DuesTransactions;
 using Apartio.Expenses;
 using Apartio.FloorResidents;
@@ -30,5 +31,10 @@ public class ApartioApplicationAutoMapperProfile : Profile
 		CreateMap<Expense, ExpenseDto>().ReverseMap();
 		CreateMap<Expense, CreateOrUpdateExpense>().ReverseMap();
 
+		CreateMap<Asset, AssetDto>().ReverseMap();
+		CreateMap<Asset, CreateOrUpdateAssetDto>().ReverseMap();
+
+		CreateMap<AssetMaintenanceLog, AssetMaintenanceLogDto>().ReverseMap();
+		CreateMap<AssetMaintenanceLog, CreateOrUpdateMaintenanceLogDto>().ReverseMap();
 	}
 }

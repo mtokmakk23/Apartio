@@ -39,6 +39,10 @@ const routes: Routes = [
     path: 'duyuru',
     loadChildren: () => import('./duyuru/duyuru.module').then(m => m.DuyuruModule),
   },
+  {
+    path: 'assets',
+    loadChildren: () => import('./assets/assets.module').then(m => m.AssetsModule),
+  },
 ];
 
 @NgModule({
