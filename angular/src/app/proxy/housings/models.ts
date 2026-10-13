@@ -1,5 +1,19 @@
 import type { EntityDto, ExtensibleObject } from '@abp/ng.core';
 
+export enum HousingType {
+  None = 0,
+  Site = 1,
+  Apartman = 2,
+  Daire = 3,
+  Rezidans = 4,
+  Villa = 5,
+}
+
+export interface HousingTypeDto extends EntityDto<number> {
+  name?: string;
+  description?: string;
+}
+
 export interface BlockDto extends EntityDto<string> {
   housingId?: string;
   blockName?: string;
@@ -31,7 +45,7 @@ export interface CreateOrUpdateHousing extends ExtensibleObject {
   postalCode?: string;
   email?: string;
   phone?: string;
-  type?: string;
+  type?: number;
   isDelayCompensation: boolean;
   delayCompensationRate: number;
   lastPaymentDay: number;
@@ -45,7 +59,8 @@ export interface HousingDto extends EntityDto<string> {
   postalCode?: string;
   email?: string;
   phone?: string;
-  type?: string;
+  type?: number;
+  typeName?: string;
   isDelayCompensation: boolean;
   delayCompensationRate: number;
   lastPaymentDay: number;

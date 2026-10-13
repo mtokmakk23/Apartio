@@ -1,4 +1,4 @@
-import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, HousingDto } from './models';
+import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, HousingDto, HousingTypeDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -96,6 +96,14 @@ export class HousingService {
     this.restService.request<any, HousingDto[]>({
       method: 'GET',
       url: '/api/app/housing',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getHousingTypeList = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, HousingTypeDto[]>({
+      method: 'GET',
+      url: '/api/app/housing/housing-type-list',
     },
     { apiName: this.apiName,...config });
   

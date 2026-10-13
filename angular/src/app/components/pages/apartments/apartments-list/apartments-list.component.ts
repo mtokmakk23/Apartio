@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TURKEY_CITIES, TurkeyCity } from '../turkey-cities';
-import { HousingService, CreateOrUpdateHousing, HousingDto, BlockDto, CreateOrUpdateBlock } from '@proxy/housings';
+import { HousingService, CreateOrUpdateHousing, HousingDto, BlockDto, CreateOrUpdateBlock, HousingType, HousingTypeDto } from '@proxy/housings';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -38,7 +38,15 @@ export class ApartmentsListComponent implements OnInit {
   blokEkleniyor = false;
   blokHata = '';
 
-  readonly TIPLER = ['Site', 'Apartman', 'Rezidans', 'Villa'];
+  tipler: HousingTypeDto[] = [];
+  readonly HousingType = HousingType;
+  readonly TIPLER = [
+    { value: HousingType.Apartman, label: 'Apartman' },
+    { value: HousingType.Site, label: 'Site' },
+    { value: HousingType.Daire, label: 'Daire' },
+    { value: HousingType.Rezidans, label: 'Rezidans' },
+    { value: HousingType.Villa, label: 'Villa' },
+  ];
   readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
   ilceler: string[] = [];
 
@@ -63,12 +71,26 @@ export class ApartmentsListComponent implements OnInit {
   async verileriYukle() {
     this.loading = true;
     try {
-      this.apartmanlar = await firstValueFrom(this.housingService.getList());
+      const [apartmanlar, tipler] = await Promise.all([
+        firstValueFrom(this.housingService.getList()),
+        firstValueFrom(this.housingService.getHousingTypeList()).catch(() => [])
+      ]);
+      this.apartmanlar = apartmanlar;
+      if (tipler && tipler.length > 0) {
+        this.tipler = tipler;
+      }
     } catch (err) {
       console.error('Veriler yuklenirken hata:', err);
     } finally {
       this.loading = false;
     }
+  }
+
+  getHousingTypeLabel(type?: number, typeName?: string): string {
+    if (typeName) return typeName;
+    const dynamic = this.tipler.find(t => t.id === type)?.name;
+    if (dynamic) return dynamic;
+    return this.TIPLER.find(t => t.value === type)?.label ?? '—';
   }
 
   yeniApartman() {
@@ -77,7 +99,7 @@ export class ApartmentsListComponent implements OnInit {
     this.formVergiDairesi = '';
     this.formVergiNo = '';
     this.formSigortaNo = '';
-    this.form = { isDelayCompensation: false, delayCompensationRate: 0, type: 'Apartman' };
+    this.form = { isDelayCompensation: false, delayCompensationRate: 0, type: HousingType.Apartman };
     this.showModal = true;
   }
 
@@ -105,7 +127,7 @@ export class ApartmentsListComponent implements OnInit {
         postalCode: this.form.postalCode || '',
         email: this.form.email || '',
         phone: this.form.phone || '',
-        type: this.form.type || 'Apartman',
+        type: this.form.type ?? HousingType.Apartman,
         isDelayCompensation: this.form.isDelayCompensation ?? false,
         delayCompensationRate: this.form.delayCompensationRate ?? 0,
         lastPaymentDay: this.form.lastPaymentDay ?? 10,

@@ -32,6 +32,7 @@ public class ApartioDbContext :
 
 	/* Add DbSet properties for your Aggregate Roots / Entities here. */
 	public DbSet<Housing> Housings { get; set; }
+	public DbSet<HousingType> HousingTypes { get; set; }
 	public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
 	public DbSet<Block> Blocks { get; set; }
 	public DbSet<Circle> Circles { get; set; }
@@ -43,15 +44,15 @@ public class ApartioDbContext :
 	#region Entities from the modules
 
 	/* Notice: We only implemented IIdentityDbContext and ITenantManagementDbContext
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityDbContext and ITenantManagementDbContext.
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
+	 * and replaced them for this DbContext. This allows you to perform JOIN
+	 * queries for the entities of these modules over the repositories easily. You
+	 * typically don't need that for other modules. But, if you need, you can
+	 * implement the DbContext interface of the needed module and use ReplaceDbContext
+	 * attribute just like IIdentityDbContext and ITenantManagementDbContext.
+	 *
+	 * More info: Replacing a DbContext of a module ensures that the related module
+	 * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
+	 */
 
 	//Identity
 	public DbSet<IdentityUser> Users { get; set; }
@@ -97,10 +98,29 @@ public class ApartioDbContext :
 
 		/* Configure your own tables/entities inside here */
 
+		builder.Entity<HousingType>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "HousingTypes"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+			typeBuilder.Property(x => x.Id).ValueGeneratedNever();
+			typeBuilder.Property(x => x.Name).IsRequired().HasMaxLength(64);
+			typeBuilder.HasData(
+				new HousingType(1, "Site"),
+				new HousingType(2, "Apartman"),
+				new HousingType(3, "Daire"),
+				new HousingType(4, "Rezidans"),
+				new HousingType(5, "Villa")
+			);
+		});
+
 		builder.Entity<Housing>(typeBuilder =>
 		{
 			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Housings"), ApartioConsts.DbSchema);
 			typeBuilder.ConfigureByConvention();
+			typeBuilder.HasOne(x => x.HousingType)
+				.WithMany()
+				.HasForeignKey(x => x.Type)
+				.OnDelete(DeleteBehavior.Restrict);
 		});
 		builder.Entity<UserMatchHousing>(typeBuilder =>
 		{
