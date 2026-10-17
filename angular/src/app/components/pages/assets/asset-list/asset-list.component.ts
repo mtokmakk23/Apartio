@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Asset, AssetMaintenanceLog, AssetStatus, DEMIRBAS_DURUMLARI, DEMIRBAS_KATEGORILERI, LocationOption } from '../asset.model';
 import { AssetService } from '../asset.service';
 import { HousingService, HousingDto, BlockDto } from '@proxy/housings';
-import { firstValueFrom } from 'rxjs';
+import type { CreateOrUpdateAssetDto } from '@proxy/assets';
+import { firstValueFrom, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-asset-list',
@@ -12,17 +14,22 @@ import { firstValueFrom } from 'rxjs';
 export class AssetListComponent implements OnInit {
   assets: Asset[] = [];
   filteredAssets: Asset[] = [];
+  loading: boolean = false;
+  isSaving: boolean = false;
+  isLogSaving: boolean = false;
 
-  // Seçili Housing ve Bağlı Bloklar
+  // Ana Filtre: Seçili Housing (Site / Apartman) ve Bağlı Bloklar
   seciliHousing: HousingDto | null = null;
   bloklar: BlockDto[] = [];
   konumSecenekleri: LocationOption[] = [];
 
-  // Filtreler
+  // Filtreler (BE seviyesinde filtrelenir)
   aramaMetni: string = '';
   secilenKategori: string = '';
   secilenDurum: string = '';
-  secilenKonum: string = '';
+  secilenKonum: string = ''; // İkinci filtre: O siteye ait bina veya blok (LocationId)
+
+  private searchSubject = new Subject<string>();
 
   // Demirbaş Ekle / Düzenle Modal
   showModal: boolean = false;
@@ -34,6 +41,7 @@ export class AssetListComponent implements OnInit {
   showDetayModal: boolean = false;
   detayAsset: Asset | null = null;
   assetLogs: AssetMaintenanceLog[] = [];
+  logLoading: boolean = false;
 
   // Bakım / Servis Kaydı Ekle Modal
   showLogModal: boolean = false;
@@ -49,8 +57,16 @@ export class AssetListComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    // Arama için debounce
+    this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.verileriYukle();
+    });
+
     await this.housingVeKonumlariYukle();
-    this.verileriYukle();
+    await this.verileriYukle();
   }
 
   async housingVeKonumlariYukle(): Promise<void> {
@@ -98,33 +114,44 @@ export class AssetListComponent implements OnInit {
     }
   }
 
-  verileriYukle(): void {
-    // Seçili apartman/site GUID'ine göre demirbaşları getir
-    const housingId = this.seciliHousing?.id;
-    this.assets = this.assetService.getAssets(housingId);
-    this.filtrele();
+  /**
+   * 1. ANA FİLTRE: Yukarıdan seçilen site parametresi (seciliHousing.id).
+   * 2. İKİNCİ FİLTRE: Sayfadaki konum/blok filtresi (secilenKonum).
+   * Veriler doğrudan Backend'den filtrelenerek getirilir; FE filtreleme güvenlik açığını önler.
+   */
+  async verileriYukle(): Promise<void> {
+    this.loading = true;
+    try {
+      const housingId = this.seciliHousing?.id;
+      const list = await firstValueFrom(
+        this.assetService.getList({
+          housingId: housingId,
+          locationId: this.secilenKonum || undefined,
+          category: this.secilenKategori || undefined,
+          status: this.secilenDurum || undefined,
+          filter: this.aramaMetni?.trim() || undefined
+        })
+      );
+      this.assets = list || [];
+      this.filteredAssets = [...this.assets];
 
-    if (this.detayAsset) {
-      this.assetLogs = this.assetService.getLogsByAssetId(this.detayAsset.id);
+      if (this.detayAsset) {
+        await this.logsYukle(this.detayAsset.id);
+      }
+    } catch {
+      this.assets = [];
+      this.filteredAssets = [];
+    } finally {
+      this.loading = false;
     }
   }
 
-  filtrele(): void {
-    const q = this.aramaMetni.trim().toLowerCase();
-    this.filteredAssets = this.assets.filter(a => {
-      const aramaUyumu =
-        !q ||
-        a.name.toLowerCase().includes(q) ||
-        a.code.toLowerCase().includes(q) ||
-        (a.location && a.location.toLowerCase().includes(q)) ||
-        (a.supplier && a.supplier.toLowerCase().includes(q));
+  onSearchChange(): void {
+    this.searchSubject.next(this.aramaMetni);
+  }
 
-      const kategoriUyumu = !this.secilenKategori || a.category === this.secilenKategori;
-      const durumUyumu = !this.secilenDurum || a.status === this.secilenDurum;
-      const konumUyumu = !this.secilenKonum || a.locationId === this.secilenKonum;
-
-      return aramaUyumu && kategoriUyumu && durumUyumu && konumUyumu;
-    });
+  onFiltreDegisti(): void {
+    this.verileriYukle();
   }
 
   // --- İstatistikler ---
@@ -171,7 +198,7 @@ export class AssetListComponent implements OnInit {
 
   tarihFormatla(tarih?: string): string {
     if (!tarih) return '—';
-    if (/^\d{2}\.\d{2}\.\d{4}$/.test(tarih)) return tarih; // Zaten dd.MM.yyyy
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(tarih)) return tarih;
     const d = new Date(tarih);
     if (isNaN(d.getTime())) return tarih;
     return (
@@ -203,6 +230,20 @@ export class AssetListComponent implements OnInit {
     return '';
   }
 
+  private parseDateToIso(dateStr?: string): string | undefined {
+    if (!dateStr) return undefined;
+    const clean = dateStr.trim();
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(clean)) {
+      const parts = clean.split('.');
+      return `${parts[2]}-${parts[1]}-${parts[0]}T00:00:00.000Z`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(clean)) {
+      return clean;
+    }
+    const d = new Date(clean);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
+
   takvimAc(picker: HTMLInputElement, tarihDegeri?: string): void {
     if (picker) {
       const iso = this.toIsoDate(tarihDegeri);
@@ -221,7 +262,6 @@ export class AssetListComponent implements OnInit {
     }
   }
 
-  // Takvimden seçim yapıldığında (YYYY-MM-DD -> dd.MM.yyyy çevirir)
   tarihSecildi(event: Event, field: 'purchase_date' | 'warranty_end_date' | 'maintenance_date'): void {
     const input = event.target as HTMLInputElement;
     if (input && input.value) {
@@ -279,7 +319,6 @@ export class AssetListComponent implements OnInit {
     this.seciliAsset = null;
     this.validationHata = '';
 
-    // Varsayılan ilk konumu (site/apartman ortak alan) seç
     const defaultOpt = this.konumSecenekleri[0];
 
     this.form = {
@@ -314,7 +353,7 @@ export class AssetListComponent implements OnInit {
     this.showModal = true;
   }
 
-  kaydet(): void {
+  async kaydet(): Promise<void> {
     this.validationHata = '';
     if (!this.form.name?.trim()) {
       this.validationHata = 'Demirbaş adı zorunludur.';
@@ -329,52 +368,82 @@ export class AssetListComponent implements OnInit {
       return;
     }
 
-    // Kod teklik kontrolü (Tüm tabloda değil, sadece aynı bina/yapı içerisinde benzersiz olmalı)
-    const targetHousingId = this.seciliHousing?.id || this.form.housingId || 'default-housing';
-    const allAssets = this.assetService.getAllAssetsRaw();
-    const ayniKod = allAssets.find(
-      a =>
-        a.code.toUpperCase() === this.form.code!.trim().toUpperCase() &&
-        a.id !== this.seciliAsset?.id &&
-        ((a.housingId && a.housingId === targetHousingId) || (!a.housingId && targetHousingId === 'default-housing'))
-    );
-    if (ayniKod) {
-      this.validationHata = `"${this.form.code}" kodu bu bina/yapı içerisinde zaten başka bir demirbaş için kullanılıyor! Farklı binalarda aynı kodu kullanabilirsiniz.`;
-      return;
-    }
-
     this.konumMetniniOlustur();
 
-    this.assetService.saveAsset(
-      {
-        ...this.form,
-        housingId: this.seciliHousing?.id || this.form.housingId,
-        code: this.form.code.trim().toUpperCase(),
-        id: this.seciliAsset?.id
-      },
-      this.seciliHousing?.id
-    );
+    const targetHousingId = this.seciliHousing?.id || this.form.housingId;
+    const dto: CreateOrUpdateAssetDto = {
+      housingId: targetHousingId,
+      locationId: this.form.locationId!,
+      locationType: this.form.locationType,
+      locationDetail: this.form.locationDetail,
+      name: this.form.name.trim(),
+      code: this.form.code.trim().toUpperCase(),
+      category: this.form.category || 'Teknik',
+      location: this.form.location || '',
+      purchaseDate: this.parseDateToIso(this.form.purchase_date),
+      supplier: this.form.supplier?.trim(),
+      warrantyEndDate: this.parseDateToIso(this.form.warranty_end_date),
+      status: this.form.status || 'Aktif',
+      notes: this.form.notes?.trim()
+    };
 
-    this.showModal = false;
-    this.verileriYukle();
+    this.isSaving = true;
+    try {
+      if (this.seciliAsset?.id) {
+        await firstValueFrom(this.assetService.update(this.seciliAsset.id, dto));
+      } else {
+        await firstValueFrom(this.assetService.create(dto));
+      }
+
+      this.showModal = false;
+      await this.verileriYukle();
+    } catch (err: any) {
+      this.validationHata =
+        err?.error?.error?.message ||
+        err?.error?.message ||
+        err?.message ||
+        'Kayıt işlemi sırasında bir hata oluştu.';
+    } finally {
+      this.isSaving = false;
+    }
   }
 
-  sil(asset: Asset, event?: MouseEvent): void {
+  async sil(asset: Asset, event?: MouseEvent): Promise<void> {
     if (event) event.stopPropagation();
     if (confirm(`"${asset.name}" (${asset.code}) demirbaşını ve tüm bakım geçmişini silmek istediğinize emin misiniz?`)) {
-      this.assetService.deleteAsset(asset.id);
-      if (this.detayAsset?.id === asset.id) {
-        this.showDetayModal = false;
+      try {
+        await firstValueFrom(this.assetService.delete(asset.id));
+        if (this.detayAsset?.id === asset.id) {
+          this.showDetayModal = false;
+        }
+        await this.verileriYukle();
+      } catch (err: any) {
+        alert(
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          err?.message ||
+          'Silme işlemi sırasında hata oluştu.'
+        );
       }
-      this.verileriYukle();
     }
   }
 
   // --- Detay Modalı ---
-  detayAc(asset: Asset): void {
+  async detayAc(asset: Asset): Promise<void> {
     this.detayAsset = asset;
-    this.assetLogs = this.assetService.getLogsByAssetId(asset.id);
     this.showDetayModal = true;
+    await this.logsYukle(asset.id);
+  }
+
+  async logsYukle(assetId: string): Promise<void> {
+    this.logLoading = true;
+    try {
+      this.assetLogs = await firstValueFrom(this.assetService.getLogs(assetId));
+    } catch {
+      this.assetLogs = [];
+    } finally {
+      this.logLoading = false;
+    }
   }
 
   toplamBakimMaliyeti(): number {
@@ -395,7 +464,7 @@ export class AssetListComponent implements OnInit {
     this.showLogModal = true;
   }
 
-  bakimKaydiKaydet(): void {
+  async bakimKaydiKaydet(): Promise<void> {
     this.logValidationHata = '';
     if (!this.logForm.description?.trim()) {
       this.logValidationHata = 'Yapılan işlem / arıza açıklaması zorunludur.';
@@ -406,22 +475,46 @@ export class AssetListComponent implements OnInit {
       return;
     }
 
-    this.assetService.addMaintenanceLog({
-      asset_id: this.detayAsset!.id,
-      maintenance_date: this.logForm.maintenance_date || this.bugunTarih(),
-      description: this.logForm.description.trim(),
-      cost: Number(this.logForm.cost) || 0,
-      performed_by: this.logForm.performed_by?.trim() || ''
-    });
+    this.isLogSaving = true;
+    try {
+      await firstValueFrom(
+        this.assetService.createLog({
+          assetId: this.detayAsset!.id,
+          maintenanceDate: this.parseDateToIso(this.logForm.maintenance_date) || new Date().toISOString(),
+          description: this.logForm.description.trim(),
+          cost: Number(this.logForm.cost) || 0,
+          performedBy: this.logForm.performed_by?.trim() || ''
+        })
+      );
 
-    this.showLogModal = false;
-    this.verileriYukle();
+      this.showLogModal = false;
+      await this.logsYukle(this.detayAsset!.id);
+    } catch (err: any) {
+      this.logValidationHata =
+        err?.error?.error?.message ||
+        err?.error?.message ||
+        err?.message ||
+        'Bakım kaydı eklenirken bir hata oluştu.';
+    } finally {
+      this.isLogSaving = false;
+    }
   }
 
-  bakimKaydiSil(id: string): void {
+  async bakimKaydiSil(id: string): Promise<void> {
     if (confirm('Bu bakım kaydını silmek istediğinize emin misiniz?')) {
-      this.assetService.deleteMaintenanceLog(id);
-      this.verileriYukle();
+      try {
+        await firstValueFrom(this.assetService.deleteLog(id));
+        if (this.detayAsset) {
+          await this.logsYukle(this.detayAsset.id);
+        }
+      } catch (err: any) {
+        alert(
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          err?.message ||
+          'Bakım kaydı silinirken hata oluştu.'
+        );
+      }
     }
   }
 }

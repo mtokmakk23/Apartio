@@ -13,20 +13,47 @@ public class AssetAppService(
     IAssetRepository assetRepository,
     IHousingAppService housingAppService) : ApartioAppService, IAssetAppService
 {
-    public async Task<List<AssetDto>> GetListAsync()
+    public async Task<List<AssetDto>> GetListAsync(GetAssetListInput? input = null)
     {
-        var housing = await housingAppService.GetSelectedHousingAsync();
-        if (housing == null)
+        // 1. ANA FİLTRE: Yukarıdan seçilen site parametresi (HousingId)
+        // Belirtilmişse gönderilen site parametresini kullan, aksi halde oturumdaki seçili siteyi al
+        Guid activeHousingId;
+        if (input?.HousingId.HasValue == true && input.HousingId.Value != Guid.Empty)
         {
-            return new List<AssetDto>();
+            activeHousingId = input.HousingId.Value;
+        }
+        else
+        {
+            var selectedHousing = await housingAppService.GetSelectedHousingAsync();
+            if (selectedHousing != null && selectedHousing.Id != Guid.Empty)
+            {
+                activeHousingId = selectedHousing.Id;
+            }
+            else
+            {
+                return new List<AssetDto>();
+            }
         }
 
-        var list = await assetRepository.GetListByHousingIdAsync(housing.Id);
+        // 2. İKİNCİ FİLTRE: O siteye ait binalar veya blokları listeleyen filtre (LocationId)
+        // Tüm filtreleme (Site, Blok/Bina, Kategori, Durum, Arama) Backend (BE) veritabanı seviyesinde uygulanır.
+        var list = await assetRepository.GetListAsync(
+            activeHousingId,
+            input?.LocationId,
+            input?.Category,
+            input?.Status,
+            input?.Filter);
+
         return list.Select(ObjectMapper.Map<Asset, AssetDto>).ToList();
     }
 
     public async Task<List<AssetDto>> GetListByHousingIdAsync(Guid housingId)
     {
+        if (housingId == Guid.Empty)
+        {
+            return new List<AssetDto>();
+        }
+
         var list = await assetRepository.GetListByHousingIdAsync(housingId);
         return list.Select(ObjectMapper.Map<Asset, AssetDto>).ToList();
     }
@@ -115,11 +142,29 @@ public class AssetAppService(
             throw new UserFriendlyException("Silinecek demirbaş kaydı bulunamadı.");
         }
 
+        var selectedHousing = await housingAppService.GetSelectedHousingAsync();
+        if (selectedHousing != null && asset.HousingId != selectedHousing.Id)
+        {
+            throw new UserFriendlyException("Bu demirbaşı silme yetkiniz bulunmamaktadır.");
+        }
+
         await assetRepository.DeleteAsync(id, autoSave: true);
     }
 
     public async Task<List<AssetMaintenanceLogDto>> GetLogsAsync(Guid assetId)
     {
+        var asset = await assetRepository.GetAsync(assetId);
+        if (asset == null)
+        {
+            throw new UserFriendlyException("Demirbaş kaydı bulunamadı.");
+        }
+
+        var selectedHousing = await housingAppService.GetSelectedHousingAsync();
+        if (selectedHousing != null && asset.HousingId != selectedHousing.Id)
+        {
+            throw new UserFriendlyException("Bu demirbaş kayıtlarına erişim yetkiniz bulunmamaktadır.");
+        }
+
         var logs = await assetRepository.GetLogsByAssetIdAsync(assetId);
         return logs.Select(ObjectMapper.Map<AssetMaintenanceLog, AssetMaintenanceLogDto>).ToList();
     }
@@ -134,6 +179,18 @@ public class AssetAppService(
         if (input.Cost < 0)
         {
             throw new UserFriendlyException("Maliyet tutarı negatif olamaz.");
+        }
+
+        var asset = await assetRepository.GetAsync(input.AssetId);
+        if (asset == null)
+        {
+            throw new UserFriendlyException("Demirbaş kaydı bulunamadı.");
+        }
+
+        var selectedHousing = await housingAppService.GetSelectedHousingAsync();
+        if (selectedHousing != null && asset.HousingId != selectedHousing.Id)
+        {
+            throw new UserFriendlyException("Bu demirbaşa bakım kaydı ekleme yetkiniz bulunmamaktadır.");
         }
 
         var log = ObjectMapper.Map<CreateOrUpdateMaintenanceLogDto, AssetMaintenanceLog>(input);

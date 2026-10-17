@@ -7,7 +7,7 @@ namespace Apartio.Assets;
 
 public interface IAssetAppService : IApplicationService
 {
-    Task<List<AssetDto>> GetListAsync();
+    Task<List<AssetDto>> GetListAsync(GetAssetListInput? input = null);
     Task<List<AssetDto>> GetListByHousingIdAsync(Guid housingId);
     Task<AssetDto> GetAsync(Guid id);
     Task<AssetDto> CreateAsync(CreateOrUpdateAssetDto input);

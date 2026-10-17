@@ -25,13 +25,56 @@ public class EfCoreAssetRepository : EfCoreRepository<ApartioDbContext, Asset, G
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
 
+    public async Task<List<Asset>> GetListAsync(
+        Guid housingId,
+        Guid? locationId = null,
+        string? category = null,
+        string? status = null,
+        string? search = null,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        var query = dbSet.Where(x => x.HousingId == housingId);
+
+        if (locationId.HasValue && locationId.Value != Guid.Empty)
+        {
+            query = query.Where(x => x.LocationId == locationId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var cat = category.Trim();
+            query = query.Where(x => x.Category == cat);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var st = status.Trim();
+            query = query.Where(x => x.Status == st);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim();
+            query = query.Where(x =>
+                (x.Name != null && x.Name.Contains(s)) ||
+                (x.Code != null && x.Code.Contains(s)) ||
+                (x.Location != null && x.Location.Contains(s)) ||
+                (x.Supplier != null && x.Supplier.Contains(s)));
+        }
+
+        return await query
+            .OrderByDescending(x => x.CreationTime)
+            .ToListAsync(GetCancellationToken(cancellationToken));
+    }
+
     public async Task<bool> ExistsCodeInHousingAsync(Guid housingId, string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
         var normalizedCode = code.Trim().ToUpper();
 
         var query = dbSet
-            .Where(x => x.HousingId == housingId && x.Code.ToUpper() == normalizedCode);
+            .Where(x => x.HousingId == housingId && x.Code != null && x.Code == normalizedCode);
 
         if (excludeId.HasValue && excludeId.Value != Guid.Empty)
         {

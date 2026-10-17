@@ -2,12 +2,8 @@
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-2">
+      <div>
         <h4 class="mb-0">Demirbaş & Envanter Takibi</h4>
-        <span *ngIf="seciliHousing" class="badge bg-primary-subtle text-primary border border-primary-subtle font-size-13 py-1 px-2">
-          <i class="ri-building-line me-1"></i>
-          {{ seciliHousing.name }} ({{ seciliHousing.typeName || 'Yapı' }})
-        </span>
       </div>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
@@ -96,13 +92,13 @@
                 class="form-control"
                 placeholder="Demirbaş adı, kodu, konum veya firma ara..."
                 [(ngModel)]="aramaMetni"
-                (ngModelChange)="filtrele()"
+                (ngModelChange)="onSearchChange()"
               />
               <i class="ri-search-line search-icon"></i>
             </div>
           </div>
           <div class="col-md-3">
-            <select class="form-select" [(ngModel)]="secilenKonum" (ngModelChange)="filtrele()">
+            <select class="form-select" [(ngModel)]="secilenKonum" (ngModelChange)="onFiltreDegisti()">
               <option value="">Tüm Yapı / Bloklar</option>
               <option *ngFor="let opt of konumSecenekleri" [value]="opt.id">
                 {{ opt.name }}
@@ -110,13 +106,13 @@
             </select>
           </div>
           <div class="col-md-2">
-            <select class="form-select" [(ngModel)]="secilenKategori" (ngModelChange)="filtrele()">
+            <select class="form-select" [(ngModel)]="secilenKategori" (ngModelChange)="onFiltreDegisti()">
               <option value="">Tüm Kategoriler</option>
               <option *ngFor="let k of kategoriler" [value]="k">{{ k }}</option>
             </select>
           </div>
           <div class="col-md-2">
-            <select class="form-select" [(ngModel)]="secilenDurum" (ngModelChange)="filtrele()">
+            <select class="form-select" [(ngModel)]="secilenDurum" (ngModelChange)="onFiltreDegisti()">
               <option value="">Tüm Durumlar</option>
               <option *ngFor="let d of durumlar" [value]="d">{{ d }}</option>
             </select>
@@ -145,7 +141,11 @@
         </span>
       </div>
       <div class="card-body pt-3">
-        <div class="table-responsive">
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2 mb-0">Demirbaşlar sunucudan yükleniyor...</p>
+        </div>
+        <div class="table-responsive" *ngIf="!loading">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -412,9 +412,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-light" (click)="showModal = false">İptal</button>
-        <button type="button" class="btn btn-primary" (click)="kaydet()">
-          {{ seciliAsset ? 'Güncelle' : 'Kaydet' }}
+        <button type="button" class="btn btn-light" (click)="showModal = false" [disabled]="isSaving">İptal</button>
+        <button type="button" class="btn btn-primary" (click)="kaydet()" [disabled]="isSaving">
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          {{ isSaving ? 'Kaydediliyor...' : (seciliAsset ? 'Güncelle' : 'Kaydet') }}
         </button>
       </div>
     </div>
@@ -630,9 +631,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-light" (click)="showLogModal = false">İptal</button>
-        <button type="button" class="btn btn-success" (click)="bakimKaydiKaydet()">
-          Kaydı Ekle
+        <button type="button" class="btn btn-light" (click)="showLogModal = false" [disabled]="isLogSaving">İptal</button>
+        <button type="button" class="btn btn-success" (click)="bakimKaydiKaydet()" [disabled]="isLogSaving">
+          <span *ngIf="isLogSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          {{ isLogSaving ? 'Kaydediliyor...' : 'Kaydı Ekle' }}
         </button>
       </div>
     </div>

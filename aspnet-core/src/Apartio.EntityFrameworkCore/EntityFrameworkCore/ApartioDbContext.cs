@@ -164,11 +164,11 @@ public class ApartioDbContext :
 			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Assets"), ApartioConsts.DbSchema);
 			typeBuilder.ConfigureByConvention();
 
-			typeBuilder.Property(x => x.Name).IsRequired().HasMaxLength(255);
-			typeBuilder.Property(x => x.Code).IsRequired().HasMaxLength(100);
-			typeBuilder.Property(x => x.Category).IsRequired().HasMaxLength(100);
-			typeBuilder.Property(x => x.Location).IsRequired().HasMaxLength(200);
-			typeBuilder.Property(x => x.Status).IsRequired().HasMaxLength(50);
+			typeBuilder.Property(x => x.Name).HasMaxLength(255);
+			typeBuilder.Property(x => x.Code).HasMaxLength(100);
+			typeBuilder.Property(x => x.Category).HasMaxLength(100);
+			typeBuilder.Property(x => x.Location).HasMaxLength(200);
+			typeBuilder.Property(x => x.Status).HasMaxLength(50);
 			typeBuilder.Property(x => x.Supplier).HasMaxLength(255);
 
 			// Not: DB tarafında unique constraint konulmamıştır. Teklik kontrolü Backend Business Rules seviyesinde yürütülür.
