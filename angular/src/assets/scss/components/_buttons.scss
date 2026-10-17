@@ -176,7 +176,10 @@ a {
             background-color: var(--#{$prefix}#{$state});
             border-color: var(--#{$prefix}#{$state}) !important;
 
-            &:is(:hover, :focus, :active, :focus-visible) {
+            &:hover,
+            &:focus,
+            &:active,
+            &:focus-visible {
                 color: var(--#{$prefix}#{$state});
                 background-color: rgba(var(--#{$prefix}#{$state}-rgb), 0.1);
             }

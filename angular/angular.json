@@ -27,7 +27,7 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": ["chart.js", "js-sha256"],
+            "allowedCommonJsDependencies": ["chart.js", "js-sha256", "file-saver", "lottie-web"],
             "assets": ["src/favicon.ico", "src/assets","src/manifest.webmanifest","src/web.config"],
             "styles": [
               {
@@ -127,6 +127,14 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
               "budgets": [
                 {
                   "type": "initial",
