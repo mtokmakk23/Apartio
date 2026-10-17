@@ -1,0 +1,107 @@
+.card-animate {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.search-box {
+  position: relative;
+
+  .search-icon {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #878a99;
+    pointer-events: none;
+  }
+}
+
+.table {
+  tbody tr {
+    transition: background-color 0.2s;
+  }
+}
+
+.btn-soft-primary {
+  background-color: rgba(64, 81, 137, 0.1);
+  border: none;
+  color: #405189;
+  &:hover {
+    background-color: rgba(64, 81, 137, 0.2);
+  }
+}
+
+.btn-soft-info {
+  background-color: rgba(41, 156, 219, 0.1);
+  border: none;
+  color: #299cdb;
+  &:hover {
+    background-color: rgba(41, 156, 219, 0.2);
+  }
+}
+
+.btn-soft-danger {
+  background-color: rgba(240, 101, 72, 0.1);
+  border: none;
+  color: #f06548;
+  &:hover {
+    background-color: rgba(240, 101, 72, 0.2);
+  }
+}
+
+.btn-ghost-danger {
+  background: transparent;
+  border: none;
+  color: #f06548;
+  &:hover {
+    background-color: rgba(240, 101, 72, 0.1);
+  }
+}
+
+.date-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: all 0.2s ease-in-out;
+  border-color: #ced4da;
+
+  i {
+    pointer-events: none;
+    font-size: 17px;
+  }
+
+  &:hover {
+    background-color: #405189 !important;
+    border-color: #405189 !important;
+    color: #ffffff !important;
+  }
+
+  &:active {
+    background-color: #364473 !important;
+    border-color: #364473 !important;
+    color: #ffffff !important;
+  }
+}
+
+.date-picker-anchor {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+

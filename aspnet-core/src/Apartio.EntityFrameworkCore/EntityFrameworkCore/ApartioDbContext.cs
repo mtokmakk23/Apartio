@@ -1,3 +1,4 @@
+using Apartio.Assets;
 using Apartio.DuesTransactions;
 using Apartio.Expenses;
 using Apartio.FloorResidents;
@@ -39,6 +40,8 @@ public class ApartioDbContext :
 	public DbSet<FloorResident> FloorResidents { get; set; }
 	public DbSet<DuesTransaction> DuesTransactions { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
+	public DbSet<Asset> Assets { get; set; }
+	public DbSet<AssetMaintenanceLog> AssetMaintenanceLogs { get; set; }
 
 
 	#region Entities from the modules
@@ -154,6 +157,34 @@ public class ApartioDbContext :
 
 			typeBuilder.Property(x => x.Amount).HasColumnType("decimal(18,2)");
 			typeBuilder.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
+		});
+
+		builder.Entity<Asset>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Assets"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+
+			typeBuilder.Property(x => x.Name).HasMaxLength(255);
+			typeBuilder.Property(x => x.Code).HasMaxLength(100);
+			typeBuilder.Property(x => x.Category).HasMaxLength(100);
+			typeBuilder.Property(x => x.Location).HasMaxLength(200);
+			typeBuilder.Property(x => x.Status).HasMaxLength(50);
+			typeBuilder.Property(x => x.Supplier).HasMaxLength(255);
+
+			// Not: DB tarafında unique constraint konulmamıştır. Teklik kontrolü Backend Business Rules seviyesinde yürütülür.
+			typeBuilder.HasIndex(x => new { x.HousingId, x.Code });
+		});
+
+		builder.Entity<AssetMaintenanceLog>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "AssetMaintenanceLogs"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+
+			typeBuilder.Property(x => x.Description).IsRequired().HasMaxLength(1000);
+			typeBuilder.Property(x => x.Cost).HasColumnType("decimal(18,2)");
+			typeBuilder.Property(x => x.PerformedBy).HasMaxLength(255);
+
+			typeBuilder.HasIndex(x => x.AssetId);
 		});
 	}
 }
