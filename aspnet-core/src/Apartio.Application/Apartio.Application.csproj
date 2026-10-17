@@ -13,14 +13,6 @@
     <None Remove="Workers\**" />
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>4</VersionMinor>
-      <VersionMajor>2</VersionMajor>
-      <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Apartio.Domain\Apartio.Domain.csproj" />
     <ProjectReference Include="..\Apartio.Application.Contracts\Apartio.Application.Contracts.csproj" />
   </ItemGroup>
@@ -39,10 +31,5 @@
     <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="8.3.2" />
     <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="8.3.2" />
     <PackageReference Include="WebPush" Version="1.0.12" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms">
-      <HintPath>..\..\..\..\..\..\Desktop\System.Windows.Forms.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
