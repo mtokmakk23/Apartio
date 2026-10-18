@@ -1,4 +1,4 @@
-﻿using Apartio.DuesTransactions;
+using Apartio.DuesTransactions;
 using Apartio.FloorResidents;
 using Apartio.Housings;
 using System;
@@ -30,7 +30,8 @@ namespace Apartio.DuesTransactions
                 throw new UserFriendlyException("Tutar 0(Sıfır)'dan Fazla Olmalıdır.");
             }
             var housing = await _housingAppService.GetSelectedHousingAsync();
-            var property = new DuesTransaction(housing.Id, prop.BlockId, prop.CircleId, prop.FloorResidentId, prop.Price, prop.Month, prop.Year, prop.Date_, prop.DelayCompensationRate, prop.Type, prop.Sing, prop.Note, prop.DueDate);
+            var unitId = prop.UnitId ?? prop.CircleId;
+            var property = new DuesTransaction(housing.Id, prop.BlockId, unitId, prop.FloorResidentId, prop.Price, prop.Month, prop.Year, prop.Date_, prop.DelayCompensationRate, prop.Type, prop.Sing, prop.Note, prop.DueDate);
             await _duesTransactionRepository.InsertAsync(property, autoSave: true);
         }
 

@@ -37,6 +37,7 @@ public class ApartioDbContext :
 	public DbSet<UserMatchHousing> UserMatchHousings { get; set; }
 	public DbSet<Block> Blocks { get; set; }
 	public DbSet<Circle> Circles { get; set; }
+	public DbSet<Unit> Units { get; set; }
 	public DbSet<FloorResident> FloorResidents { get; set; }
 	public DbSet<DuesTransaction> DuesTransactions { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
@@ -110,9 +111,10 @@ public class ApartioDbContext :
 			typeBuilder.HasData(
 				new HousingType(1, "Site"),
 				new HousingType(2, "Apartman"),
-				new HousingType(3, "Daire"),
-				new HousingType(4, "Rezidans"),
-				new HousingType(5, "Villa")
+				new HousingType(3, "Rezidans"),
+				new HousingType(4, "Villa Sitesi"),
+				new HousingType(5, "Müstakil Ev"),
+				new HousingType(6, "İş Merkezi / Plaza")
 			);
 		});
 
@@ -139,6 +141,15 @@ public class ApartioDbContext :
 		{
 			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Circles"), ApartioConsts.DbSchema);
 			typeBuilder.ConfigureByConvention();
+		});
+		builder.Entity<Unit>(typeBuilder =>
+		{
+			typeBuilder.ToTable(string.Concat(ApartioConsts.DbTablePrefix, "Units"), ApartioConsts.DbSchema);
+			typeBuilder.ConfigureByConvention();
+			typeBuilder.Property(x => x.UnitNumber).IsRequired().HasMaxLength(64);
+			typeBuilder.Property(x => x.UnitType).IsRequired().HasMaxLength(64);
+			typeBuilder.Property(x => x.GrossSquareMeters).HasColumnType("decimal(6,2)");
+			typeBuilder.Property(x => x.NetSquareMeters).HasColumnType("decimal(6,2)");
 		});
 		builder.Entity<FloorResident>(typeBuilder =>
 		{

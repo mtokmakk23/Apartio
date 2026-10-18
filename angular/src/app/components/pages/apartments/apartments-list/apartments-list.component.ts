@@ -41,11 +41,12 @@ export class ApartmentsListComponent implements OnInit {
   tipler: HousingTypeDto[] = [];
   readonly HousingType = HousingType;
   readonly TIPLER = [
-    { value: HousingType.Apartman, label: 'Apartman' },
     { value: HousingType.Site, label: 'Site' },
-    { value: HousingType.Daire, label: 'Daire' },
+    { value: HousingType.Apartman, label: 'Apartman' },
     { value: HousingType.Rezidans, label: 'Rezidans' },
-    { value: HousingType.Villa, label: 'Villa' },
+    { value: HousingType.VillaSitesi, label: 'Villa Sitesi' },
+    { value: HousingType.MustakilEv, label: 'Müstakil Ev' },
+    { value: HousingType.IsMerkezi, label: 'İş Merkezi / Plaza' },
   ];
   readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
   ilceler: string[] = [];
@@ -99,7 +100,7 @@ export class ApartmentsListComponent implements OnInit {
     this.formVergiDairesi = '';
     this.formVergiNo = '';
     this.formSigortaNo = '';
-    this.form = { isDelayCompensation: false, delayCompensationRate: 0, type: HousingType.Apartman };
+    this.form = { isDelayCompensation: false, delayCompensationRate: 0, type: HousingType.Site };
     this.showModal = true;
   }
 
@@ -116,7 +117,7 @@ export class ApartmentsListComponent implements OnInit {
 
   async kaydet() {
     this.validationHata = '';
-    if (!this.form.name?.trim()) { this.validationHata = 'Apartman adı zorunludur.'; return; }
+    if (!this.form.name?.trim()) { this.validationHata = 'Site / Tesis adı zorunludur.'; return; }
     if (!this.form.city?.trim()) { this.validationHata = 'Şehir zorunludur.'; return; }
     try {
       const prop: CreateOrUpdateHousing = {
@@ -127,7 +128,7 @@ export class ApartmentsListComponent implements OnInit {
         postalCode: this.form.postalCode || '',
         email: this.form.email || '',
         phone: this.form.phone || '',
-        type: this.form.type ?? HousingType.Apartman,
+        type: this.form.type ?? HousingType.Site,
         isDelayCompensation: this.form.isDelayCompensation ?? false,
         delayCompensationRate: this.form.delayCompensationRate ?? 0,
         lastPaymentDay: this.form.lastPaymentDay ?? 10,
@@ -146,7 +147,7 @@ export class ApartmentsListComponent implements OnInit {
   }
 
   async sil(id: string) {
-    if (!confirm('Bu apartmanı silmek istediğinize emin misiniz?')) return;
+    if (!confirm('Bu site / tesis kaydını silmek istediğinize emin misiniz?')) return;
     try {
       await firstValueFrom(this.housingService.delete(id));
       await this.verileriYukle();

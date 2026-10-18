@@ -22,6 +22,9 @@ public class ApartioApplicationAutoMapperProfile : Profile
 		CreateMap<Circle, CircleDto>().ReverseMap();
 		CreateMap<Circle, CreateOrUpdateCircle>().ReverseMap();
 
+		CreateMap<Unit, UnitDto>().ReverseMap();
+		CreateMap<Unit, CreateOrUpdateUnit>().ReverseMap();
+
 		CreateMap<FloorResident, FloorResidentDto>().ReverseMap();
 		CreateMap<FloorResident, CreateOrUpdateFloorResident>().ReverseMap();
 

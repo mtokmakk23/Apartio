@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HousingService, BlockDto, CircleDto } from '@proxy/housings';
+import { HousingService, BlockDto, UnitDto, CreateOrUpdateUnit } from '@proxy/housings';
 import { FloorResidentService, FloorResidentDto } from '@proxy/floor-residents';
 import { firstValueFrom } from 'rxjs';
-import { CircleViewModel } from '../housing.model';
+import { UnitViewModel } from '../housing.model';
 
 @Component({
   selector: 'app-housing-list',
@@ -12,20 +12,32 @@ import { CircleViewModel } from '../housing.model';
 export class HousingListComponent implements OnInit {
 
   bloklar: BlockDto[] = [];
-  circles: CircleViewModel[] = [];
-  filteredCircles: CircleViewModel[] = [];
+  units: UnitViewModel[] = [];
+  filteredUnits: UnitViewModel[] = [];
   floorResidents: FloorResidentDto[] = [];
+
+  readonly BIRIM_TIPLERI = [
+    'Daire',
+    'Dükkan',
+    'Ofis',
+    'Villa',
+    'Dubleks',
+    'Penthouse',
+    'Stüdyo',
+    'Depo'
+  ];
 
   aramaMetni: string = '';
   secilenBlok: string = '';
+  secilenTip: string = '';
 
   showModal: boolean = false;
-  seciliCircle: CircleViewModel | null = null;
+  seciliUnit: UnitViewModel | null = null;
   silmeOnayModal: boolean = false;
   silinecekId: string | null = null;
 
-  form: Partial<CircleDto> = {};
-
+  form: Partial<CreateOrUpdateUnit> = {};
+  validationHatasi: string = '';
   loading: boolean = false;
 
   constructor(
@@ -40,22 +52,19 @@ export class HousingListComponent implements OnInit {
   async verileriYukle() {
     this.loading = true;
     try {
-      // Önce blokları çek
-      this.bloklar = await firstValueFrom(this.housingService.getBlockList());
+      // Blokları ve Sakinleri çek
+      const [bloklar, residents] = await Promise.all([
+        firstValueFrom(this.housingService.getBlockList()),
+        firstValueFrom(this.floorResidentService.getFloorResidentList())
+      ]);
 
-      // Sakinleri çek (ev sahibi / kiracı isimlerini göstermek için)
-      this.floorResidents = await firstValueFrom(this.floorResidentService.getFloorResidentList());
+      this.bloklar = bloklar;
+      this.floorResidents = residents;
 
-      // Her blok için daireleri (circle) çek ve birleştir
-      let tumCircleler: CircleViewModel[] = [];
-      for (const blok of this.bloklar) {
-        if (!blok.id) continue;
-        const circleList = await firstValueFrom(this.housingService.getCircleList(blok.id));
-        const zenginlestirilmis = circleList.map(c => this.circleZenginlestir(c, blok));
-        tumCircleler = tumCircleler.concat(zenginlestirilmis);
-      }
+      // 3 Katmanlı sistem: Sitedeki tüm bağımsız bölümleri tek sorguda çek
+      const unitList = await firstValueFrom(this.housingService.getUnitList());
 
-      this.circles = tumCircleler;
+      this.units = unitList.map(u => this.unitZenginlestir(u));
       this.filtrele();
     } catch (err) {
       console.error('Veriler yüklenirken hata oluştu:', err);
@@ -64,47 +73,70 @@ export class HousingListComponent implements OnInit {
     }
   }
 
-  circleZenginlestir(circle: CircleDto, blok?: BlockDto): CircleViewModel {
-    const sahip = this.floorResidents.find(f => f.id === circle.homeOwnerId);
-    const kiraci = this.floorResidents.find(f => f.id === circle.hirerId);
+  unitZenginlestir(unit: UnitDto): UnitViewModel {
+    const sahip = this.floorResidents.find(f => f.id === unit.homeOwnerId);
+    const kiraci = this.floorResidents.find(f => f.id === unit.hirerId);
+    const blok = this.bloklar.find(b => b.id === unit.blockId);
+
     return {
-      ...circle,
-      blockName: blok?.blockName,
+      ...unit,
+      unitNumber: unit.unitNumber || unit.circleName || '',
+      unitType: unit.unitType || 'Daire',
+      floor: unit.floor ?? 1,
+      blockName: unit.blockName || blok?.blockName || '—',
       homeOwnerName: sahip ? `${sahip.name ?? ''} ${sahip.surname ?? ''}`.trim() : undefined,
       hirerName: kiraci ? `${kiraci.name ?? ''} ${kiraci.surname ?? ''}`.trim() : undefined,
     };
   }
 
   filtrele() {
-    this.filteredCircles = this.circles.filter(c => {
+    this.filteredUnits = this.units.filter(u => {
+      const numara = u.unitNumber || u.circleName || '';
       const aramaUyumu = !this.aramaMetni ||
-        (c.circleName || '').toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
-        (c.homeOwnerName || '').toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
-        (c.hirerName || '').toLowerCase().includes(this.aramaMetni.toLowerCase());
-      const blokUyumu = !this.secilenBlok || c.blockId === this.secilenBlok;
-      return aramaUyumu && blokUyumu;
+        numara.toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
+        (u.homeOwnerName || '').toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
+        (u.hirerName || '').toLowerCase().includes(this.aramaMetni.toLowerCase());
+      
+      const blokUyumu = !this.secilenBlok || u.blockId === this.secilenBlok;
+      const tipUyumu = !this.secilenTip || u.unitType === this.secilenTip;
+
+      return aramaUyumu && blokUyumu && tipUyumu;
     });
   }
 
-  yeniDaireEkle() {
-    this.seciliCircle = null;
-    this.form = { blockId: this.bloklar[0]?.id || '' };
+  yeniUnitEkle() {
+    this.seciliUnit = null;
+    this.form = {
+      blockId: this.bloklar[0]?.id || '',
+      unitType: 'Daire',
+      floor: 1,
+      grossSquareMeters: undefined,
+      netSquareMeters: undefined
+    };
     this.showModal = true;
   }
 
-  duzenle(circle: CircleViewModel) {
-    this.seciliCircle = circle;
-    this.form = { ...circle };
+  duzenle(unit: UnitViewModel) {
+    this.seciliUnit = unit;
+    this.form = {
+      blockId: unit.blockId,
+      unitNumber: unit.unitNumber || unit.circleName,
+      unitType: unit.unitType || 'Daire',
+      floor: unit.floor ?? 1,
+      grossSquareMeters: unit.grossSquareMeters,
+      netSquareMeters: unit.netSquareMeters,
+      homeOwnerId: unit.homeOwnerId,
+      hirerId: unit.hirerId
+    };
     this.showModal = true;
   }
-
-  validationHatasi: string = '';
 
   async kaydet() {
-    // Validation
     this.validationHatasi = '';
-    if (!this.form.circleName?.trim()) {
-      this.validationHatasi = 'Daire adı zorunludur.';
+    const unitNo = (this.form.unitNumber || this.form.circleName || '').trim();
+
+    if (!unitNo) {
+      this.validationHatasi = 'Bağımsız bölüm / kapı numarası zorunludur.';
       return;
     }
     if (!this.form.blockId) {
@@ -113,17 +145,21 @@ export class HousingListComponent implements OnInit {
     }
 
     try {
-      const prop = {
+      const prop: CreateOrUpdateUnit = {
         blockId: this.form.blockId,
-        circleName: this.form.circleName,
+        unitNumber: unitNo,
+        unitType: this.form.unitType || 'Daire',
+        floor: Number(this.form.floor) || 1,
+        grossSquareMeters: this.form.grossSquareMeters ? Number(this.form.grossSquareMeters) : undefined,
+        netSquareMeters: this.form.netSquareMeters ? Number(this.form.netSquareMeters) : undefined,
         homeOwnerId: this.form.homeOwnerId || undefined,
         hirerId: this.form.hirerId || undefined,
       };
 
-      if (this.seciliCircle && this.seciliCircle.id) {
-        await firstValueFrom(this.housingService.updateCircle(this.seciliCircle.id, prop));
+      if (this.seciliUnit && this.seciliUnit.id) {
+        await firstValueFrom(this.housingService.updateUnit(this.seciliUnit.id, prop));
       } else {
-        await firstValueFrom(this.housingService.createCircle(prop));
+        await firstValueFrom(this.housingService.createUnit(prop));
       }
 
       this.showModal = false;
@@ -141,7 +177,7 @@ export class HousingListComponent implements OnInit {
   async silmeOnayla2() {
     if (!this.silinecekId) return;
     try {
-      await firstValueFrom(this.housingService.deleteCircleById(this.silinecekId));
+      await firstValueFrom(this.housingService.deleteUnit(this.silinecekId));
       this.silmeOnayModal = false;
       await this.verileriYukle();
     } catch (err) {
@@ -153,7 +189,7 @@ export class HousingListComponent implements OnInit {
     return this.bloklar.find(b => b.id === blockId)?.blockName || '—';
   }
 
-  toplamDaire() { return this.circles.length; }
-  toplamSahipli() { return this.circles.filter(c => !!c.homeOwnerId).length; }
-  toplamKiracili() { return this.circles.filter(c => !!c.hirerId).length; }
+  toplamBirim() { return this.units.length; }
+  toplamSahipli() { return this.units.filter(u => !!u.homeOwnerId).length; }
+  toplamKiracili() { return this.units.filter(u => !!u.hirerId).length; }
 }

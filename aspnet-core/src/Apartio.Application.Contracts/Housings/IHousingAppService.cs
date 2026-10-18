@@ -24,4 +24,9 @@ public interface IHousingAppService : IApplicationService
 	Task CreateCircleAsync(CreateOrUpdateCircle prop);
 	Task DeleteCircle(Guid id);
 	Task<List<CircleDto>> GetCircleListAsync(Guid blockId);
+
+	Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop);
+	Task CreateUnitAsync(CreateOrUpdateUnit prop);
+	Task<List<UnitDto>> GetUnitListAsync();
+	Task<List<UnitDto>> GetUnitListByBlockIdAsync(Guid blockId);
 }

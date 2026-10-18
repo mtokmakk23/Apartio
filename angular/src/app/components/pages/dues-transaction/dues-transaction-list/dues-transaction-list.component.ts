@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DuesTransactionService, CreateOrUpdateDuesTransaction } from '@proxy/dues-transactions';
-import { HousingService, BlockDto, CircleDto, HousingDto } from '@proxy/housings';
+import { HousingService, BlockDto, CircleDto, HousingDto, UnitDto } from '@proxy/housings';
 import { FloorResidentService, FloorResidentDto } from '@proxy/floor-residents';
 import { firstValueFrom } from 'rxjs';
 import { DuesTransactionViewModel, AY_ISIMLERI } from '../dues-transaction.model';
@@ -25,7 +25,9 @@ export class DuesTransactionListComponent implements OnInit {
   filteredIslemler: DuesTransactionViewModel[] = [];
 
   bloklar: BlockDto[] = [];
-  circles: CircleDto[] = [];
+  units: UnitDto[] = [];
+  get circles(): any[] { return this.units; }
+  set circles(val: any[]) { this.units = val; }
   floorResidents: FloorResidentDto[] = [];
   seciliHousing: HousingDto | null = null;
 
@@ -84,13 +86,8 @@ export class DuesTransactionListComponent implements OnInit {
       this.bloklar = await firstValueFrom(this.housingService.getBlockList());
       this.floorResidents = await firstValueFrom(this.floorResidentService.getFloorResidentList());
 
-      let tumCircleler: CircleDto[] = [];
-      for (const blok of this.bloklar) {
-        if (!blok.id) continue;
-        const circleList = await firstValueFrom(this.housingService.getCircleList(blok.id));
-        tumCircleler = tumCircleler.concat(circleList);
-      }
-      this.circles = tumCircleler;
+      // Bağımsız bölümleri (Unit) tek seferde çek
+      this.units = await firstValueFrom(this.housingService.getUnitList());
 
       const islemListesi = await firstValueFrom(this.duesTransactionService.getDuesTransactionList());
       this.islemler = islemListesi.map(i => this.zenginlestir(i));
@@ -104,23 +101,30 @@ export class DuesTransactionListComponent implements OnInit {
   }
 
   zenginlestir(islem: any): DuesTransactionViewModel {
-    const circle = this.circles.find(c => c.id === islem.circleId);
+    const unitId = islem.unitId || islem.circleId;
+    const unit = this.units.find(u => u.id === unitId);
     const sakin = this.floorResidents.find(f => f.id === islem.floorResidentId);
+    const unitLabel = unit?.unitNumber || unit?.circleName;
     return {
       ...islem,
-      circleName: circle?.circleName,
+      unitId: unitId,
+      circleId: unitId,
+      unitName: unitLabel,
+      circleName: unitLabel,
       floorResidentName: sakin ? ((sakin.name ?? '') + ' ' + (sakin.surname ?? '')).trim() : undefined,
     };
   }
 
   filtrele() {
     this.filteredIslemler = this.islemler.filter(i => {
+      const unitLabel = i.unitName || i.circleName || '';
       const aramaUyumu = !this.aramaMetni ||
-        (i.circleName || '').toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
+        unitLabel.toLowerCase().includes(this.aramaMetni.toLowerCase()) ||
         (i.floorResidentName || '').toLowerCase().includes(this.aramaMetni.toLowerCase());
       const ayUyumu = !this.secilenAy || i.month === this.secilenAy;
+      const unitId = i.unitId || i.circleId;
       const blokUyumu = !this.secilenBlok ||
-        this.circles.find(c => c.id === i.circleId)?.blockId === this.secilenBlok;
+        this.units.find(u => u.id === unitId)?.blockId === this.secilenBlok;
       return aramaUyumu && ayUyumu && blokUyumu;
     });
   }
@@ -157,10 +161,12 @@ export class DuesTransactionListComponent implements OnInit {
       for (const id of Array.from(this.seciliIds)) {
         const islem = this.islemler.find(i => i.id === id);
         if (!islem) continue;
+        const unitId = islem.unitId || islem.circleId || undefined;
         const prop: CreateOrUpdateDuesTransaction = {
           housingId: islem.housingId || this.seciliHousing?.id,
           blockId: islem.blockId || undefined,
-          circleId: islem.circleId || undefined,
+          unitId: unitId,
+          circleId: unitId,
           floorResidentId: islem.floorResidentId || undefined,
           price: islem.price || 0,
           month: islem.month || 1,
@@ -184,9 +190,21 @@ export class DuesTransactionListComponent implements OnInit {
     }
   }
 
+  get filteredModalUnits() {
+    if (!this.secilenModalBlok) return this.units;
+    return this.units.filter(u => u.blockId === this.secilenModalBlok);
+  }
+
   get filteredModalCircles() {
-    if (!this.secilenModalBlok) return this.circles;
-    return this.circles.filter(c => c.blockId === this.secilenModalBlok);
+    return this.filteredModalUnits;
+  }
+
+  onUnitSelect(unitId?: string) {
+    if (!unitId) return;
+    const unit = this.units.find(u => u.id === unitId);
+    if (unit) {
+      this.form.floorResidentId = unit.hirerId || unit.homeOwnerId || '';
+    }
   }
 
   // ---- Tekil kayıt ----
@@ -209,8 +227,9 @@ export class DuesTransactionListComponent implements OnInit {
 
   duzenle(islem: DuesTransactionViewModel) {
     this.seciliIslem = islem;
-    this.secilenModalBlok = this.circles.find(c => c.id === islem.circleId)?.blockId || '';
-    this.form = { ...islem };
+    const unitId = islem.unitId || islem.circleId;
+    this.secilenModalBlok = this.units.find(u => u.id === unitId)?.blockId || islem.blockId || '';
+    this.form = { ...islem, unitId: unitId, circleId: unitId };
     this.showModal = true;
   }
 
@@ -219,10 +238,12 @@ export class DuesTransactionListComponent implements OnInit {
     if (!this.form.price || this.form.price <= 0) { alert('Tutar 0dan buyuk olmalidir.'); return; }
     try {
       const now = new Date();
+      const unitId = this.form.unitId || this.form.circleId || undefined;
       const prop: CreateOrUpdateDuesTransaction = {
         housingId: this.form.housingId || this.seciliHousing?.id,
         blockId: this.form.blockId || undefined,
-        circleId: this.form.circleId || undefined,
+        unitId: unitId,
+        circleId: unitId,
         floorResidentId: this.form.floorResidentId || undefined,
         price: this.form.price || 0,
         month: this.form.month || (now.getMonth() + 1),
@@ -291,16 +312,16 @@ export class DuesTransactionListComponent implements OnInit {
       return;
     }
 
-    const hedefCircleler = this.tahakkukForm.tumBloklar
-      ? this.circles
-      : this.circles.filter(c => c.blockId && this.tahakkukForm.secilenBloklar.includes(c.blockId));
+    const hedefUnitler = this.tahakkukForm.tumBloklar
+      ? this.units
+      : this.units.filter(u => u.blockId && this.tahakkukForm.secilenBloklar.includes(u.blockId));
 
-    if (hedefCircleler.length === 0) {
-      alert('Tahakkuk uygulanacak daire bulunamadı.');
+    if (hedefUnitler.length === 0) {
+      alert('Tahakkuk uygulanacak bağımsız bölüm / daire bulunamadı.');
       return;
     }
 
-    if (!confirm(hedefCircleler.length + ' daireye ' + this.tahakkukForm.tutar + ' TL tahakkuk uygulanacak. Onaylıyor musunuz?')) return;
+    if (!confirm(hedefUnitler.length + ' daire/bağımsız bölüme ' + this.tahakkukForm.tutar + ' TL tahakkuk uygulanacak. Onaylıyor musunuz?')) return;
 
     this.tahakkukYukleniyor = true;
     this.tahakkukSonuc = null;
@@ -308,13 +329,14 @@ export class DuesTransactionListComponent implements OnInit {
     let hatali = 0;
     const now = new Date();
 
-    for (const circle of hedefCircleler) {
+    for (const unit of hedefUnitler) {
       try {
         const prop: CreateOrUpdateDuesTransaction = {
           housingId: this.seciliHousing?.id,
-          blockId: circle.blockId || undefined,
-          circleId: circle.id || undefined,
-          floorResidentId: circle.homeOwnerId || circle.hirerId || undefined,
+          blockId: unit.blockId || undefined,
+          unitId: unit.id || undefined,
+          circleId: unit.id || undefined,
+          floorResidentId: unit.hirerId || unit.homeOwnerId || undefined,
           price: this.tahakkukForm.tutar,
           month: this.tahakkukForm.ay,
           year: this.tahakkukForm.yil,

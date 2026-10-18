@@ -191,21 +191,21 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="form-label">Blok</label>
-            <select class="form-select" [(ngModel)]="secilenModalBlok" (change)="form.circleId = ''">
+            <select class="form-select" [(ngModel)]="secilenModalBlok" (change)="form.unitId = ''; form.circleId = ''">
               <option value="">Tüm Bloklar</option>
               <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label class="form-label">Daire <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.circleId" [disabled]="!secilenModalBlok">
+            <label class="form-label">Bağımsız Bölüm / Daire <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.unitId" (change)="form.circleId = form.unitId; onUnitSelect(form.unitId)" [disabled]="!secilenModalBlok">
               <option value="">Seçiniz</option>
-              <option *ngFor="let c of filteredModalCircles" [value]="c.id">{{ c.circleName }}</option>
+              <option *ngFor="let u of filteredModalUnits" [value]="u.id">No: {{ u.unitNumber || u.circleName }} ({{ u.unitType || 'Daire' }})</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Sakin</label>
-            <select class="form-select" [(ngModel)]="form.floorResidentId" [disabled]="!form.circleId">
+            <select class="form-select" [(ngModel)]="form.floorResidentId" [disabled]="!form.unitId && !form.circleId">
               <option value="">Seçiniz</option>
               <option *ngFor="let f of floorResidents" [value]="f.id">{{ f.name }} {{ f.surname }}</option>
             </select>

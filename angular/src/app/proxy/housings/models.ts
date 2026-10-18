@@ -1,17 +1,12 @@
 import type { EntityDto, ExtensibleObject } from '@abp/ng.core';
 
 export enum HousingType {
-  None = 0,
   Site = 1,
   Apartman = 2,
-  Daire = 3,
-  Rezidans = 4,
-  Villa = 5,
-}
-
-export interface HousingTypeDto extends EntityDto<number> {
-  name?: string;
-  description?: string;
+  Rezidans = 3,
+  VillaSitesi = 4,
+  MustakilEv = 5,
+  IsMerkezi = 6,
 }
 
 export interface BlockDto extends EntityDto<string> {
@@ -45,10 +40,22 @@ export interface CreateOrUpdateHousing extends ExtensibleObject {
   postalCode?: string;
   email?: string;
   phone?: string;
-  type?: number;
+  type: number;
   isDelayCompensation: boolean;
   delayCompensationRate: number;
   lastPaymentDay: number;
+}
+
+export interface CreateOrUpdateUnit extends ExtensibleObject {
+  blockId?: string;
+  unitNumber?: string;
+  unitType?: string;
+  floor: number;
+  grossSquareMeters?: number;
+  netSquareMeters?: number;
+  homeOwnerId?: string;
+  hirerId?: string;
+  circleName?: string;
 }
 
 export interface HousingDto extends EntityDto<string> {
@@ -59,9 +66,29 @@ export interface HousingDto extends EntityDto<string> {
   postalCode?: string;
   email?: string;
   phone?: string;
-  type?: number;
+  type: number;
   typeName?: string;
   isDelayCompensation: boolean;
   delayCompensationRate: number;
   lastPaymentDay: number;
+}
+
+export interface HousingTypeDto extends EntityDto<number> {
+  name?: string;
+  description?: string;
+}
+
+export interface UnitDto extends EntityDto<string> {
+  blockId?: string;
+  unitNumber?: string;
+  unitType?: string;
+  floor: number;
+  grossSquareMeters?: number;
+  netSquareMeters?: number;
+  homeOwnerId?: string;
+  hirerId?: string;
+  circleName?: string;
+  blockName?: string;
+  homeOwnerName?: string;
+  hirerName?: string;
 }

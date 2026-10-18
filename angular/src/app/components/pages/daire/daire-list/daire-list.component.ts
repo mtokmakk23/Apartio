@@ -44,8 +44,7 @@ export class DaireListComponent implements OnInit {
   }
 
   getCircleList=async()=>{
-  var list=await firstValueFrom(this.housingService.getCircleList(""));
-
+    var list=await firstValueFrom(this.housingService.getUnitList());
   }
 
   filtrele() {

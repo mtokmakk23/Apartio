@@ -3,6 +3,7 @@ import type { EntityDto, ExtensibleObject } from '@abp/ng.core';
 export interface CreateOrUpdateDuesTransaction extends ExtensibleObject {
   housingId?: string;
   blockId?: string;
+  unitId?: string;
   circleId?: string;
   floorResidentId?: string;
   price: number;
@@ -19,6 +20,7 @@ export interface CreateOrUpdateDuesTransaction extends ExtensibleObject {
 export interface DuesTransactionDto extends EntityDto<string> {
   housingId?: string;
   blockId?: string;
+  unitId?: string;
   circleId?: string;
   floorResidentId?: string;
   price: number;

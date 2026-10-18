@@ -1,4 +1,4 @@
-import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, HousingDto, HousingTypeDto } from './models';
+import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, CreateOrUpdateUnit, HousingDto, HousingTypeDto, UnitDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -44,6 +44,15 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
+  createUnit = (prop: CreateOrUpdateUnit, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/housing/unit',
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
   delete = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
@@ -66,6 +75,16 @@ export class HousingService {
       url: `/api/app/housing/${id}/circle`,
     },
     { apiName: this.apiName,...config });
+  
+
+  deleteUnit = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/housing/${id}/unit`,
+    },
+    { apiName: this.apiName,...config });
+
+  deleteUnitById = (id: string, config?: Partial<Rest.Config>) => this.deleteUnit(id, config);
   
 
   get = (id: string, config?: Partial<Rest.Config>) =>
@@ -92,14 +111,6 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  getList = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, HousingDto[]>({
-      method: 'GET',
-      url: '/api/app/housing',
-    },
-    { apiName: this.apiName,...config });
-  
-
   getHousingTypeList = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, HousingTypeDto[]>({
       method: 'GET',
@@ -108,10 +119,34 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
+  getList = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, HousingDto[]>({
+      method: 'GET',
+      url: '/api/app/housing',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getSelectedHousing = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, HousingDto>({
       method: 'GET',
       url: '/api/app/housing/selected-housing',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getUnitList = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, UnitDto[]>({
+      method: 'GET',
+      url: '/api/app/housing/unit-list',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getUnitListByBlockId = (blockId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, UnitDto[]>({
+      method: 'GET',
+      url: `/api/app/housing/unit-list-by-block-id/${blockId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -138,6 +173,15 @@ export class HousingService {
     this.restService.request<any, void>({
       method: 'PUT',
       url: `/api/app/housing/${id}/housing`,
+      body: prop,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateUnit = (id: string, prop: CreateOrUpdateUnit, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: `/api/app/housing/${id}/unit`,
       body: prop,
     },
     { apiName: this.apiName,...config });

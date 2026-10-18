@@ -1,11 +1,11 @@
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0">Daire Yönetimi</h4>
+      <h4 class="mb-0">Bağımsız Bölüm (Daire / Birim) Yönetimi</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item"><a href="javascript:void(0);">Ana Sayfa</a></li>
-          <li class="breadcrumb-item active">Daire Yönetimi</li>
+          <li class="breadcrumb-item active">Birim Yönetimi</li>
         </ol>
       </div>
     </div>
@@ -18,8 +18,8 @@
     <div class="card card-animate">
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
-          <p class="text-muted mb-1">Toplam Daire</p>
-          <h3 class="mb-0">{{ toplamDaire() }}</h3>
+          <p class="text-muted mb-1">Toplam Bağımsız Bölüm</p>
+          <h3 class="mb-0">{{ toplamBirim() }}</h3>
         </div>
         <div class="avatar-sm">
           <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
@@ -33,7 +33,7 @@
     <div class="card card-animate">
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
-          <p class="text-muted mb-1">Ev Sahipli</p>
+          <p class="text-muted mb-1">Mülk Sahibi Oturan</p>
           <h3 class="mb-0 text-success">{{ toplamSahipli() }}</h3>
         </div>
         <div class="avatar-sm">
@@ -48,7 +48,7 @@
     <div class="card card-animate">
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
-          <p class="text-muted mb-1">Kiracılı</p>
+          <p class="text-muted mb-1">Kiracılı Birimler</p>
           <h3 class="mb-0 text-warning">{{ toplamKiracili() }}</h3>
         </div>
         <div class="avatar-sm">
@@ -66,11 +66,11 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header">
-        <div class="row align-items-center">
+        <div class="row align-items-center g-2">
           <div class="col-md-4">
             <div class="form-icon right">
               <input type="search" class="form-control form-control-icon"
-                placeholder="Daire veya sakin ara..."
+                placeholder="Kapı no veya sakin ara..."
                 [(ngModel)]="aramaMetni" (input)="filtrele()" />
               <i class="ri-search-line"></i>
             </div>
@@ -81,10 +81,16 @@
               <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
-          <div class="col-md-5 text-end">
-            <button class="btn btn-primary btn-sm btn-label" (click)="yeniDaireEkle()">
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="secilenTip" (change)="filtrele()">
+              <option value="">Tüm Türler</option>
+              <option *ngFor="let t of BIRIM_TIPLERI" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 text-end">
+            <button class="btn btn-primary btn-sm btn-label" (click)="yeniUnitEkle()">
               <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
-              Yeni Daire Ekle
+              Yeni Birim Ekle
             </button>
           </div>
         </div>
@@ -98,40 +104,66 @@
           <table class="table table-hover table-nowrap align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>Daire</th>
-                <th>Blok</th>
+                <th>No / Kapı</th>
+                <th>Tür</th>
+                <th>Kat</th>
+                <th>Alan (m²)</th>
+                <th>Blok / Yapı</th>
                 <th>Ev Sahibi</th>
                 <th>Kiracı</th>
                 <th class="text-center">İşlemler</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let circle of filteredCircles">
-                <td><strong>{{ circle.circleName }}</strong></td>
-                <td>{{ circle.blockName || blokAdi(circle.blockId) }}</td>
+              <tr *ngFor="let unit of filteredUnits">
                 <td>
-                  <span *ngIf="circle.homeOwnerName">
-                    <i class="ri-user-line me-1 text-muted"></i>{{ circle.homeOwnerName }}
-                  </span>
-                  <span *ngIf="!circle.homeOwnerName" class="text-muted">—</span>
+                  <strong>{{ unit.unitNumber || unit.circleName }}</strong>
                 </td>
                 <td>
-                  <span *ngIf="circle.hirerName">
-                    <i class="ri-user-line me-1 text-muted"></i>{{ circle.hirerName }}
+                  <span class="badge" [ngClass]="{
+                    'bg-primary-subtle text-primary': unit.unitType === 'Daire',
+                    'bg-warning-subtle text-warning': unit.unitType === 'Dükkan' || unit.unitType === 'Ofis',
+                    'bg-success-subtle text-success': unit.unitType === 'Villa',
+                    'bg-info-subtle text-info': unit.unitType === 'Dubleks' || unit.unitType === 'Penthouse',
+                    'bg-secondary-subtle text-secondary': unit.unitType === 'Depo' || unit.unitType === 'Stüdyo'
+                  }">
+                    {{ unit.unitType || 'Daire' }}
                   </span>
-                  <span *ngIf="!circle.hirerName" class="text-muted">—</span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-body">{{ unit.floor }}. Kat</span>
+                </td>
+                <td>
+                  <div *ngIf="unit.grossSquareMeters || unit.netSquareMeters">
+                    <span *ngIf="unit.grossSquareMeters" class="fw-medium">{{ unit.grossSquareMeters }} m² <small class="text-muted">(Brüt)</small></span>
+                    <div *ngIf="unit.netSquareMeters" class="text-muted small">{{ unit.netSquareMeters }} m² <small>(Net)</small></div>
+                  </div>
+                  <span *ngIf="!unit.grossSquareMeters && !unit.netSquareMeters" class="text-muted">—</span>
+                </td>
+                <td>{{ unit.blockName || blokAdi(unit.blockId) }}</td>
+                <td>
+                  <span *ngIf="unit.homeOwnerName">
+                    <i class="ri-user-line me-1 text-muted"></i>{{ unit.homeOwnerName }}
+                  </span>
+                  <span *ngIf="!unit.homeOwnerName" class="text-muted">—</span>
+                </td>
+                <td>
+                  <span *ngIf="unit.hirerName">
+                    <i class="ri-user-line me-1 text-muted"></i>{{ unit.hirerName }}
+                  </span>
+                  <span *ngIf="!unit.hirerName" class="text-muted">—</span>
                 </td>
                 <td class="text-center">
-                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(circle)" title="Düzenle">
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(unit)" title="Düzenle">
                     <i class="ri-edit-line"></i>
                   </button>
-                  <button class="btn btn-sm btn-soft-danger" (click)="silmeOnayla(circle.id!)" title="Sil">
+                  <button class="btn btn-sm btn-soft-danger" (click)="silmeOnayla(unit.id!)" title="Sil">
                     <i class="ri-delete-bin-line"></i>
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="filteredCircles.length === 0">
-                <td colspan="5" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+              <tr *ngIf="filteredUnits.length === 0">
+                <td colspan="8" class="text-center text-muted py-4">Kayıt bulunamadı</td>
               </tr>
             </tbody>
           </table>
@@ -143,36 +175,57 @@
 
 <!-- Ekle/Düzenle Modal -->
 <div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ seciliCircle ? 'Daire Düzenle' : 'Yeni Daire Ekle' }}</h5>
+        <h5 class="modal-title">
+          <i class="ri-building-line me-2"></i>
+          {{ seciliUnit ? 'Birim Düzenle' : 'Yeni Bağımsız Bölüm Ekle' }}
+        </h5>
         <button type="button" class="btn-close" (click)="showModal = false"></button>
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label class="form-label">Daire Adı <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="form.circleName" placeholder="A-01" />
+            <label class="form-label">Kapı / Birim No <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.unitNumber" placeholder="Örn: 1, 12A, Dükkan-1" />
           </div>
           <div class="col-md-6 mb-3">
-            <label class="form-label">Blok <span class="text-danger">*</span></label>
+            <label class="form-label">Birim Türü <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.unitType">
+              <option *ngFor="let t of BIRIM_TIPLERI" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Blok / Yapı <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="form.blockId">
               <option value="">Seçiniz</option>
               <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Bulunduğu Kat</label>
+            <input type="number" class="form-control" [(ngModel)]="form.floor" placeholder="1" />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Brüt m²</label>
+            <input type="number" class="form-control" [(ngModel)]="form.grossSquareMeters" placeholder="120" />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Net m²</label>
+            <input type="number" class="form-control" [(ngModel)]="form.netSquareMeters" placeholder="95" />
+          </div>
           <div class="col-md-6 mb-3">
-            <label class="form-label">Ev Sahibi</label>
+            <label class="form-label">Ev Sahibi (Mülk Sahibi)</label>
             <select class="form-select" [(ngModel)]="form.homeOwnerId">
-              <option value="">Seçiniz</option>
+              <option value="">Seçiniz (Yok / Boş)</option>
               <option *ngFor="let f of floorResidents" [value]="f.id">{{ f.name }} {{ f.surname }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Kiracı</label>
             <select class="form-select" [(ngModel)]="form.hirerId">
-              <option value="">Seçiniz</option>
+              <option value="">Seçiniz (Yok / Boş)</option>
               <option *ngFor="let f of floorResidents" [value]="f.id">{{ f.name }} {{ f.surname }}</option>
             </select>
           </div>
@@ -199,8 +252,8 @@
     <div class="modal-content">
       <div class="modal-body text-center p-4">
         <i class="ri-delete-bin-line text-danger" style="font-size: 3rem;"></i>
-        <h5 class="mt-3">Daire Silinecek!</h5>
-        <p class="text-muted">Bu daireyi silmek istediğinize emin misiniz?</p>
+        <h5 class="mt-3">Birim Silinecek!</h5>
+        <p class="text-muted">Bu bağımsız bölümü silmek istediğinize emin misiniz?</p>
         <div class="d-flex gap-2 justify-content-center">
           <button class="btn btn-light" (click)="silmeOnayModal = false">İptal</button>
           <button class="btn btn-danger" (click)="silmeOnayla2()">Evet, Sil</button>

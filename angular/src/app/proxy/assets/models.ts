@@ -1,14 +1,6 @@
-import type { EntityDto } from '@abp/ng.core';
+import type { AuditedEntityDto } from '@abp/ng.core';
 
-export interface GetAssetListInput {
-  housingId?: string;
-  locationId?: string;
-  category?: string;
-  status?: string;
-  filter?: string;
-}
-
-export interface AssetDto extends EntityDto<string> {
+export interface AssetDto extends AuditedEntityDto<string> {
   housingId?: string;
   locationId?: string;
   locationType?: string;
@@ -22,6 +14,14 @@ export interface AssetDto extends EntityDto<string> {
   warrantyEndDate?: string;
   status?: string;
   notes?: string;
+}
+
+export interface AssetMaintenanceLogDto extends AuditedEntityDto<string> {
+  assetId?: string;
+  maintenanceDate?: string;
+  description?: string;
+  cost: number;
+  performedBy?: string;
 }
 
 export interface CreateOrUpdateAssetDto {
@@ -40,18 +40,18 @@ export interface CreateOrUpdateAssetDto {
   notes?: string;
 }
 
-export interface AssetMaintenanceLogDto extends EntityDto<string> {
-  assetId?: string;
-  maintenanceDate?: string;
-  description?: string;
-  cost?: number;
-  performedBy?: string;
-}
-
 export interface CreateOrUpdateMaintenanceLogDto {
   assetId: string;
   maintenanceDate: string;
   description: string;
   cost: number;
   performedBy?: string;
+}
+
+export interface GetAssetListInput {
+  housingId?: string;
+  locationId?: string;
+  category?: string;
+  status?: string;
+  filter?: string;
 }
