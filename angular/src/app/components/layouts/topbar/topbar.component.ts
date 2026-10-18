@@ -152,8 +152,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
       ]);
       this.siteler = liste || [];
       this.seciliSite = secili;
-    } catch (err) {
-      console.error('Siteler yüklenirken hata oluştu:', err);
+    } catch {
+      // ignore
     } finally {
       this.siteYukleniyor = false;
     }
@@ -181,8 +181,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
       // Aktif site değiştiği için sayfayı yenileyip tüm verilerin
       // yeni siteye göre tekrar çekilmesini sağlıyoruz.
       window.location.reload();
-    } catch (err) {
-      console.error('Site değiştirilirken hata oluştu:', err);
+    } catch {
+      // ignore
     }
 
   }
