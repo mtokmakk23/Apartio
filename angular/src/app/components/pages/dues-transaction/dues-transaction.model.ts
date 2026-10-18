@@ -1,6 +1,7 @@
 import { DuesTransactionDto } from '@proxy/dues-transactions';
 
 export interface DuesTransactionViewModel extends DuesTransactionDto {
+  unitName?: string;
   circleName?: string;
   floorResidentName?: string;
 }

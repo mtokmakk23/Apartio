@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,11 +11,17 @@ namespace Apartio.Housings
     {
         public Guid UserId { get; set; }
         public Guid HousingId { get; set; }
+        public Guid? BlockId { get; set; }
 
-        public UserMatchHousing(Guid userId, Guid housingId)
+        protected UserMatchHousing()
+        {
+        }
+
+        public UserMatchHousing(Guid userId, Guid housingId, Guid? blockId = null)
         {
             UserId = userId;
             HousingId = housingId;
+            BlockId = blockId;
         }
 
 

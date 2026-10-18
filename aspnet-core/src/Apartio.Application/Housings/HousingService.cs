@@ -16,6 +16,7 @@ public class HousingService : ApartioAppService, IHousingAppService
 	private readonly IMemoryCache _cache;
 	private readonly IBlockRepository _blockRepository;
 	private readonly ICircleRepository _circleRepository;
+	private readonly IUnitRepository _unitRepository;
 	private readonly IHousingTypeRepository _housingTypeRepository;
 
 	public HousingService(
@@ -24,6 +25,7 @@ public class HousingService : ApartioAppService, IHousingAppService
 		IMemoryCache cache,
 		IBlockRepository blockRepository,
 		ICircleRepository circleRepository,
+		IUnitRepository unitRepository,
 		IHousingTypeRepository housingTypeRepository)
 	{
 		_housingRepository = housingRepository;
@@ -31,6 +33,7 @@ public class HousingService : ApartioAppService, IHousingAppService
 		_cache = cache;
 		_blockRepository = blockRepository;
 		_circleRepository = circleRepository;
+		_unitRepository = unitRepository;
 		_housingTypeRepository = housingTypeRepository;
 	}
 
@@ -250,5 +253,70 @@ public class HousingService : ApartioAppService, IHousingAppService
 					  where b.HousingId == housing.Id && c.BlockId == blockId
 					  select c;
 		return ObjectMapper.Map<List<Circle>, List<CircleDto>>(circles.ToList());
+	}
+
+	public async Task CreateUnitAsync(CreateOrUpdateUnit prop)
+	{
+		var unit = new Unit(
+			prop.BlockId,
+			string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber,
+			prop.HomeOwnerId,
+			prop.HirerId,
+			prop.UnitType,
+			prop.Floor,
+			prop.GrossSquareMeters,
+			prop.NetSquareMeters);
+		await _unitRepository.InsertAsync(unit, autoSave: true);
+	}
+
+	public async Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop)
+	{
+		var unit = await _unitRepository.GetAsync(id);
+		unit.SetUnitNumber(string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber);
+		unit.BlockId = prop.BlockId;
+		unit.HomeOwnerId = prop.HomeOwnerId;
+		unit.HirerId = prop.HirerId;
+		unit.UnitType = string.IsNullOrWhiteSpace(prop.UnitType) ? "Daire" : prop.UnitType;
+		unit.Floor = prop.Floor;
+		unit.GrossSquareMeters = prop.GrossSquareMeters;
+		unit.NetSquareMeters = prop.NetSquareMeters;
+		await _unitRepository.UpdateAsync(unit, autoSave: true);
+	}
+
+	public async Task DeleteUnitAsync(Guid id)
+	{
+		var unit = await _unitRepository.GetAsync(id);
+		await _unitRepository.DeleteAsync(unit, autoSave: true);
+	}
+
+	public async Task<List<UnitDto>> GetUnitListAsync()
+	{
+		var unitQuery = await _unitRepository.GetQueryableAsync();
+		var blockQuery = await _blockRepository.GetQueryableAsync();
+		var housing = await GetSelectedHousingAsync();
+
+		if (housing == null)
+		{
+			return new List<UnitDto>();
+		}
+
+		var query = from u in unitQuery
+					join b in blockQuery on u.BlockId equals b.Id
+					where b.HousingId == housing.Id
+					select new { Unit = u, BlockName = b.BlockName };
+
+		var list = query.ToList();
+		return list.Select(x =>
+		{
+			var dto = ObjectMapper.Map<Unit, UnitDto>(x.Unit);
+			dto.BlockName = x.BlockName;
+			return dto;
+		}).ToList();
+	}
+
+	public async Task<List<UnitDto>> GetUnitListByBlockIdAsync(Guid blockId)
+	{
+		var units = await GetUnitListAsync();
+		return units.Where(x => x.BlockId == blockId).ToList();
 	}
 }

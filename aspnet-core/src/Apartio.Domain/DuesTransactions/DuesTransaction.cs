@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,7 @@ namespace Apartio.DuesTransactions
         public bool IsDeleted { get; set; }
         public Guid HousingId { get; set; }
         public Guid? BlockId { get; set; }
-        public Guid? CircleId { get; set; }
+        public Guid? UnitId { get; set; }
         public Guid? FloorResidentId { get; set; }
         public decimal Price { get; set; }
         public int Month { get; set; }
@@ -25,11 +25,15 @@ namespace Apartio.DuesTransactions
         public string? Note { get; set; }
         public DateTime? DueDate { get; set; }
 
-        public DuesTransaction(Guid housingId, Guid? blockId, Guid? circleId, Guid? floorResidentId, decimal price, int month, int year, DateTime date_, decimal delayCompensationRate, string type, int sing, string? note, DateTime? dueDate)
+        protected DuesTransaction()
+        {
+        }
+
+        public DuesTransaction(Guid housingId, Guid? blockId, Guid? unitId, Guid? floorResidentId, decimal price, int month, int year, DateTime date_, decimal delayCompensationRate, string type, int sing, string? note, DateTime? dueDate)
         {
             HousingId = housingId;
             BlockId = blockId;
-            CircleId = circleId;
+            UnitId = unitId;
             FloorResidentId = floorResidentId;
             Price = price;
             Month = month;

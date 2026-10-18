@@ -1,12 +1,5 @@
 import type { EntityDto, ExtensibleObject } from '@abp/ng.core';
-
-export enum ExpenseStatus {
-  None = 0,
-  Pending = 1,
-  PartiallyPaid = 2,
-  Paid = 3,
-  Cancelled = 4,
-}
+import type { ExpenseStatus } from './expense-status.enum';
 
 export interface CreateOrUpdateExpense extends ExtensibleObject {
   housingId?: string;
@@ -31,11 +24,11 @@ export interface CreateOrUpdateExpense extends ExtensibleObject {
 
 export interface ExpenseDto extends EntityDto<string> {
   housingId?: string;
-  title: string;
-  category: string;
+  title?: string;
+  category?: string;
   amount: number;
   paidAmount: number;
-  expenseDate: string;
+  expenseDate?: string;
   dueDate?: string;
   paymentDate?: string;
   supplier?: string;
