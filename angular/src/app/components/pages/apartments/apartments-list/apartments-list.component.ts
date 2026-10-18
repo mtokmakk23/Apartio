@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TURKEY_CITIES, TurkeyCity } from '../turkey-cities';
 import { HousingService, CreateOrUpdateHousing, HousingDto, BlockDto, CreateOrUpdateBlock, HousingType, HousingTypeDto } from '@proxy/housings';
 import { firstValueFrom } from 'rxjs';
+import { EventService } from 'src/app/core/services/event.service';
 
 @Component({
   selector: 'app-apartments-list',
@@ -51,7 +52,10 @@ export class ApartmentsListComponent implements OnInit {
   readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
   ilceler: string[] = [];
 
-  constructor(private housingService: HousingService) {}
+  constructor(
+    private housingService: HousingService,
+    private eventService: EventService
+  ) {}
 
   sehirDegisti() {
     const secili = this.sehirler.find(s => s.il === this.form.city);
@@ -139,6 +143,7 @@ export class ApartmentsListComponent implements OnInit {
         await firstValueFrom(this.housingService.createHousing(prop));
       }
       this.showModal = false;
+      this.eventService.broadcast('housingChanged');
       await this.verileriYukle();
     } catch (err) {
       console.error('Kaydetme hatasi:', err);
@@ -150,18 +155,10 @@ export class ApartmentsListComponent implements OnInit {
     if (!confirm('Bu site / tesis kaydını silmek istediğinize emin misiniz?')) return;
     try {
       await firstValueFrom(this.housingService.delete(id));
+      this.eventService.broadcast('housingChanged');
       await this.verileriYukle();
     } catch (err) {
       console.error('Silme hatasi:', err);
-    }
-  }
-
-  async aktifYap(id: string) {
-    try {
-      await firstValueFrom(this.housingService.changeHousing(id));
-      await this.verileriYukle();
-    } catch (err) {
-      console.error('Aktif yapma hatasi:', err);
     }
   }
 

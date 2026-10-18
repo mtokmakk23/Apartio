@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   EventEmitter,
   Output,
   Inject,
@@ -22,7 +23,7 @@ import { LanguageService } from 'src/app/core/services/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService, CurrentUserDto, PermissionService } from '@abp/ng.core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ConfirmationService, ToasterService } from '@abp/ng.theme.shared';
 import { UserServiceService } from 'src/app/services/users/user-service.service';
 import { CurrentUserServiceService } from 'src/app/services/utils/current-user-service/current-user-service.service';
@@ -33,8 +34,9 @@ import { HousingService, HousingDto } from '@proxy/housings';
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
 })
-export class TopbarComponent implements OnInit {
+export class TopbarComponent implements OnInit, OnDestroy {
 
+  private housingSub?: Subscription;
   approveShopping = false;
   public currentUser: CurrentUserDto;
   messages: any;
@@ -131,6 +133,14 @@ export class TopbarComponent implements OnInit {
 
     await this.siteleriYukle();
 
+    this.housingSub = this.eventService.subscribe('housingChanged', async () => {
+      await this.siteleriYukle();
+    });
+
+  }
+
+  ngOnDestroy(): void {
+    this.housingSub?.unsubscribe();
   }
 
   async siteleriYukle() {
@@ -138,9 +148,9 @@ export class TopbarComponent implements OnInit {
     try {
       const [liste, secili] = await Promise.all([
         firstValueFrom(this.housingService.getList()),
-        firstValueFrom(this.housingService.getSelectedHousing()),
+        firstValueFrom(this.housingService.getSelectedHousing()).catch(() => null),
       ]);
-      this.siteler = liste;
+      this.siteler = liste || [];
       this.seciliSite = secili;
     } catch (err) {
       console.error('Siteler yüklenirken hata oluştu:', err);
