@@ -1,0 +1,2 @@
+# GitHub Copilot Instructions
+See AGENTS.md at the repository root for all project architecture, UI standards, coding conventions, and clean code rules.

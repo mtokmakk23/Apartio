@@ -1,0 +1,57 @@
+# EditorConfig for Apartio
+# https://editorconfig.org
+
+root = true
+
+# Tüm Dosyalar İçin Evrensel Kurallar
+[*]
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+
+# C# Kaynak Dosyaları
+[*.{cs,csx}]
+indent_size = 4
+
+# Modern C# (C# 10+) — File-scoped Namespaces
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Modern C# (C# 12) — Primary Constructors
+csharp_style_prefer_primary_constructors = true:suggestion
+
+# Modern C# (C# 12) — Collection Expressions ([])
+dotnet_style_prefer_collection_expression = true:suggestion
+
+# Modern C# — Pattern Matching & Null Checks (is null, is not null)
+csharp_style_prefer_not_pattern = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+
+# Modern C# — Switch Expressions
+csharp_style_prefer_switch_expression = true:suggestion
+
+# Temizlik — Kullanılmayan Using Direktifleri
+dotnet_remove_unnecessary_imports = true:warning
+dotnet_diagnostic.CS8019.severity = warning
+
+# Modern C# — 'var' Tercihleri
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Modern C# — Expression-bodied Members
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+
+# JSON & Yapılandırma Dosyaları (appsettings vb.)
+[*.{json,json5}]
+indent_size = 2
+
+# Frontend (Angular, SCSS, HTML, TypeScript)
+[*.{html,scss,css,ts,js}]
+indent_size = 2
+
+# Markdown Dosyaları (Trailing whitespace satır sonu için korunabilir)
+[*.md]
+trim_trailing_whitespace = false
