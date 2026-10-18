@@ -62,12 +62,50 @@
 }
 
 .site-dropdown-menu {
-  min-width: 240px;
-  max-height: 320px;
-  overflow-y: auto;
+  min-width: 260px;
+  max-width: 340px;
+  padding-bottom: 0.35rem;
 
-  .dropdown-item.active {
-    background-color: rgba(var(--vz-primary-rgb), 0.1);
-    color: var(--vz-primary);
+  .dropdown-header {
+    padding: 0.35rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .site-list-wrapper {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(var(--vz-dark-rgb, 0, 0, 0), 0.2);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(var(--vz-dark-rgb, 0, 0, 0), 0.35);
+    }
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--vz-dark-rgb, 0, 0, 0), 0.2) transparent;
+  }
+
+  .dropdown-item {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+
+    &.active {
+      background-color: rgba(var(--vz-primary-rgb), 0.1);
+      color: var(--vz-primary);
+      font-weight: 500;
+    }
+
+    &:hover:not(.active) {
+      background-color: rgba(var(--vz-primary-rgb), 0.05);
+    }
   }
 }
