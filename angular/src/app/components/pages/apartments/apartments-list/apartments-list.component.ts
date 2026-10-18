@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TURKEY_CITIES, TurkeyCity } from '../turkey-cities';
 import { HousingService, CreateOrUpdateHousing, HousingDto, BlockDto, CreateOrUpdateBlock, HousingType, HousingTypeDto } from '@proxy/housings';
 import { firstValueFrom } from 'rxjs';
+import { EventService } from 'src/app/core/services/event.service';
 
 @Component({
   selector: 'app-apartments-list',
@@ -29,14 +30,13 @@ export class ApartmentsListComponent implements OnInit {
   qrSigortaNo = '';
   qrCanvas: HTMLCanvasElement | null = null;
 
-  // Blok yönetimi
-  showBlokPanel = false;
-  blokPanelApartman: HousingDto | null = null;
-  bloklar: BlockDto[] = [];
-  blokYukleniyor = false;
-  yeniBlokAdi = '';
-  blokEkleniyor = false;
-  blokHata = '';
+  // Accordion & Blok Yönetimi
+  acikSiteler: { [housingId: string]: boolean } = {};
+  bloklarMap: { [housingId: string]: BlockDto[] } = {};
+  blokYukleniyorMap: { [housingId: string]: boolean } = {};
+  yeniBlokAdiMap: { [housingId: string]: string } = {};
+  blokEkleniyorMap: { [housingId: string]: boolean } = {};
+  blokHataMap: { [housingId: string]: string } = {};
 
   tipler: HousingTypeDto[] = [];
   readonly HousingType = HousingType;
@@ -51,7 +51,10 @@ export class ApartmentsListComponent implements OnInit {
   readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
   ilceler: string[] = [];
 
-  constructor(private housingService: HousingService) {}
+  constructor(
+    private housingService: HousingService,
+    private eventService: EventService
+  ) {}
 
   sehirDegisti() {
     const secili = this.sehirler.find(s => s.il === this.form.city);
@@ -72,18 +75,38 @@ export class ApartmentsListComponent implements OnInit {
   async verileriYukle() {
     this.loading = true;
     try {
-      const [apartmanlar, tipler] = await Promise.all([
+      const [apartmanlar, tipler, secili] = await Promise.all([
         firstValueFrom(this.housingService.getList()),
-        firstValueFrom(this.housingService.getHousingTypeList()).catch(() => [])
+        firstValueFrom(this.housingService.getHousingTypeList()).catch(() => []),
+        firstValueFrom(this.housingService.getSelectedHousing()).catch(() => null),
       ]);
-      this.apartmanlar = apartmanlar;
+      this.apartmanlar = apartmanlar || [];
       if (tipler && tipler.length > 0) {
         this.tipler = tipler;
       }
-    } catch (err) {
-      console.error('Veriler yuklenirken hata:', err);
+
+      // Başlangıçta tüm sitelerin bloklarını ve sayılarını çek
+      await this.tumSitelerinBloklariniYukle(secili?.id);
+    } catch {
+      // ignore
     } finally {
       this.loading = false;
+    }
+  }
+
+  async tumSitelerinBloklariniYukle(aktifHousingId?: string) {
+    for (const apt of this.apartmanlar) {
+      if (!apt.id) continue;
+      try {
+        await firstValueFrom(this.housingService.changeHousing(apt.id));
+        this.bloklarMap[apt.id] = await firstValueFrom(this.housingService.getBlockList());
+      } catch {
+        this.bloklarMap[apt.id] = [];
+      }
+    }
+    // Kullanıcının orijinal aktif sitesini koru
+    if (aktifHousingId) {
+      await firstValueFrom(this.housingService.changeHousing(aktifHousingId)).catch(() => {});
     }
   }
 
@@ -139,9 +162,9 @@ export class ApartmentsListComponent implements OnInit {
         await firstValueFrom(this.housingService.createHousing(prop));
       }
       this.showModal = false;
+      this.eventService.broadcast('housingChanged');
       await this.verileriYukle();
-    } catch (err) {
-      console.error('Kaydetme hatasi:', err);
+    } catch {
       this.validationHata = 'Kaydetme sırasında bir hata oluştu.';
     }
   }
@@ -150,18 +173,10 @@ export class ApartmentsListComponent implements OnInit {
     if (!confirm('Bu site / tesis kaydını silmek istediğinize emin misiniz?')) return;
     try {
       await firstValueFrom(this.housingService.delete(id));
+      this.eventService.broadcast('housingChanged');
       await this.verileriYukle();
-    } catch (err) {
-      console.error('Silme hatasi:', err);
-    }
-  }
-
-  async aktifYap(id: string) {
-    try {
-      await firstValueFrom(this.housingService.changeHousing(id));
-      await this.verileriYukle();
-    } catch (err) {
-      console.error('Aktif yapma hatasi:', err);
+    } catch {
+      // ignore
     }
   }
 
@@ -201,58 +216,60 @@ export class ApartmentsListComponent implements OnInit {
     link.click();
   }
 
-  // ---- Blok Yönetimi ----
+  // ---- Accordion & Blok Yönetimi ----
 
-  async bloklariGoster(apartman: HousingDto) {
-    this.blokPanelApartman = apartman;
-    this.showBlokPanel = true;
-    this.yeniBlokAdi = '';
-    this.blokHata = '';
-    await this.bloklariYukle(apartman.id!);
+  async toggleBlokAccordion(apartman: HousingDto) {
+    if (!apartman.id) return;
+    const id = apartman.id;
+    this.acikSiteler[id] = !this.acikSiteler[id];
+    if (this.acikSiteler[id] && !this.bloklarMap[id]) {
+      await this.siteBloklariniYukle(id);
+    }
   }
 
-  async bloklariYukle(housingId: string) {
-    this.blokYukleniyor = true;
+  async siteBloklariniYukle(housingId: string) {
+    this.blokYukleniyorMap[housingId] = true;
+    this.blokHataMap[housingId] = '';
     try {
       await firstValueFrom(this.housingService.changeHousing(housingId));
-      this.bloklar = await firstValueFrom(this.housingService.getBlockList());
-    } catch (err) {
-      console.error('Bloklar yuklenirken hata:', err);
+      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
+    } catch {
+      this.blokHataMap[housingId] = 'Bloklar yüklenirken bir hata oluştu.';
     } finally {
-      this.blokYukleniyor = false;
+      this.blokYukleniyorMap[housingId] = false;
     }
   }
 
-  async blokEkle() {
-    this.blokHata = '';
-    if (!this.yeniBlokAdi.trim()) { this.blokHata = 'Blok adı boş olamaz.'; return; }
-    this.blokEkleniyor = true;
+  async blokEkle(housingId: string) {
+    const blokAdi = (this.yeniBlokAdiMap[housingId] || '').trim();
+    this.blokHataMap[housingId] = '';
+    if (!blokAdi) {
+      this.blokHataMap[housingId] = 'Blok adı boş olamaz.';
+      return;
+    }
+
+    this.blokEkleniyorMap[housingId] = true;
     try {
-      const prop: CreateOrUpdateBlock = { blockName: this.yeniBlokAdi.trim() };
+      await firstValueFrom(this.housingService.changeHousing(housingId));
+      const prop: CreateOrUpdateBlock = { blockName: blokAdi };
       await firstValueFrom(this.housingService.createBlock(prop));
-      this.yeniBlokAdi = '';
-      await this.bloklariYukle(this.blokPanelApartman!.id!);
-    } catch (err) {
-      console.error('Blok ekleme hatasi:', err);
-      this.blokHata = 'Blok eklenirken hata oluştu.';
+      this.yeniBlokAdiMap[housingId] = '';
+      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
+    } catch {
+      this.blokHataMap[housingId] = 'Blok eklenirken bir hata oluştu.';
     } finally {
-      this.blokEkleniyor = false;
+      this.blokEkleniyorMap[housingId] = false;
     }
   }
 
-  async blokSil(blokId: string) {
+  async blokSil(housingId: string, blokId: string) {
     if (!confirm('Bu bloğu silmek istediğinize emin misiniz?')) return;
     try {
       await firstValueFrom(this.housingService.deleteBlockById(blokId));
-      await this.bloklariYukle(this.blokPanelApartman!.id!);
-    } catch (err) {
-      console.error('Blok silme hatasi:', err);
+      await firstValueFrom(this.housingService.changeHousing(housingId));
+      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
+    } catch {
+      // ignore
     }
-  }
-
-  blokPanelKapat() {
-    this.showBlokPanel = false;
-    this.blokPanelApartman = null;
-    this.bloklar = [];
   }
 }

@@ -1,41 +1,32 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   EventEmitter,
   Output,
   Inject,
   ViewChild,
   TemplateRef,
   ElementRef,
+  HostListener,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { EventService } from 'src/app/core/services/event.service';
 
 //Logout
-
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { TokenStorageService } from 'src/app/core/services/token-storage.service';
 
 // Language
 import { CookieService } from 'ngx-cookie-service';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { TranslateService } from '@ngx-translate/core';
-import { allNotification, messages } from './data';
-import { CartModel } from './topbar.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AbpOAuthService } from '@abp/ng.oauth';
-import { Abp } from '@abp/ng.setting-management/proxy/lib/proxy/volo';
-import { environment } from 'src/environments/environment';
 import { AuthService, CurrentUserDto, PermissionService } from '@abp/ng.core';
-
-import { firstValueFrom } from 'rxjs';
-import { Confirmation, ConfirmationService, ToasterService } from '@abp/ng.theme.shared';
-
+import { firstValueFrom, Subscription } from 'rxjs';
+import { ConfirmationService, ToasterService } from '@abp/ng.theme.shared';
 import { UserServiceService } from 'src/app/services/users/user-service.service';
 import { CurrentUserServiceService } from 'src/app/services/utils/current-user-service/current-user-service.service';
-
-import introJs from 'intro.js';
-import { HelperService } from 'src/app/services/utils/helper/helper.service';
 import { HousingService, HousingDto } from '@proxy/housings';
 
 @Component({
@@ -43,8 +34,9 @@ import { HousingService, HousingDto } from '@proxy/housings';
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
 })
-export class TopbarComponent implements OnInit {
-     
+export class TopbarComponent implements OnInit, OnDestroy {
+
+  private housingSub?: Subscription;
   approveShopping = false;
   public currentUser: CurrentUserDto;
   messages: any;
@@ -67,6 +59,8 @@ export class TopbarComponent implements OnInit {
   notifyId: any;
 
   // Site (Housing) Seçici
+  @ViewChild('siteDropdownContainer') siteDropdownContainer!: ElementRef;
+  @ViewChild('siteSearchInput') siteSearchInput?: ElementRef<HTMLInputElement>;
   siteler: HousingDto[] = [];
   seciliSite: HousingDto | null = null;
   siteDropdownAcik: boolean = false;
@@ -74,10 +68,29 @@ export class TopbarComponent implements OnInit {
   siteArama: string = '';
 
   get filteredSiteler(): HousingDto[] {
-    if (!this.siteArama.trim()) return this.siteler;
+    if (!this.siteArama || !this.siteArama.trim()) return this.siteler;
+    const query = this.siteArama.trim().toLocaleLowerCase('tr');
     return this.siteler.filter(s =>
-      (s.name || '').toLowerCase().includes(this.siteArama.toLowerCase())
+      (s.name || '').toLocaleLowerCase('tr').includes(query)
     );
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (
+      this.siteDropdownAcik &&
+      this.siteDropdownContainer &&
+      !this.siteDropdownContainer.nativeElement.contains(event.target as Node)
+    ) {
+      this.siteDropdownAcik = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapePress() {
+    if (this.siteDropdownAcik) {
+      this.siteDropdownAcik = false;
+    }
   }
 
   constructor(
@@ -96,13 +109,13 @@ export class TopbarComponent implements OnInit {
     private confirmation: ConfirmationService,
     private userService: UserServiceService,
     private housingService: HousingService,
-    
-  ) {}
+
+  ) { }
 
   async ngOnInit(): Promise<void> {
 
     this.currentUser = this.currentUserService.currentUser.value;
- 
+
 
     this.userData = this.TokenStorageService.getUser();
     this.element = document.documentElement;
@@ -120,6 +133,14 @@ export class TopbarComponent implements OnInit {
 
     await this.siteleriYukle();
 
+    this.housingSub = this.eventService.subscribe('housingChanged', async () => {
+      await this.siteleriYukle();
+    });
+
+  }
+
+  ngOnDestroy(): void {
+    this.housingSub?.unsubscribe();
   }
 
   async siteleriYukle() {
@@ -127,12 +148,12 @@ export class TopbarComponent implements OnInit {
     try {
       const [liste, secili] = await Promise.all([
         firstValueFrom(this.housingService.getList()),
-        firstValueFrom(this.housingService.getSelectedHousing()),
+        firstValueFrom(this.housingService.getSelectedHousing()).catch(() => null),
       ]);
-      this.siteler = liste;
+      this.siteler = liste || [];
       this.seciliSite = secili;
-    } catch (err) {
-      console.error('Siteler yüklenirken hata oluştu:', err);
+    } catch {
+      // ignore
     } finally {
       this.siteYukleniyor = false;
     }
@@ -141,6 +162,11 @@ export class TopbarComponent implements OnInit {
   toggleSiteDropdown(event: Event) {
     event.stopPropagation();
     this.siteDropdownAcik = !this.siteDropdownAcik;
+    if (this.siteDropdownAcik) {
+      setTimeout(() => {
+        this.siteSearchInput?.nativeElement?.focus();
+      }, 50);
+    }
   }
 
   async siteSec(site: HousingDto) {
@@ -155,14 +181,14 @@ export class TopbarComponent implements OnInit {
       // Aktif site değiştiği için sayfayı yenileyip tüm verilerin
       // yeni siteye göre tekrar çekilmesini sağlıyoruz.
       window.location.reload();
-    } catch (err) {
-      console.error('Site değiştirilirken hata oluştu:', err);
+    } catch {
+      // ignore
     }
 
   }
 
 
-    @ViewChild('targetBtn') targetBtn!: ElementRef;
+  @ViewChild('targetBtn') targetBtn!: ElementRef;
 
 
 
