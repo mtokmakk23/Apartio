@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 using Volo.Abp.Application.Dtos;
 
-namespace Apartio.Housings
+namespace Apartio.Housings;
+
+public class BlockDto : EntityDto<Guid>
 {
-    public class BlockDto : EntityDto<Guid>
-    {
-        public Guid HousingId { get; set; }
-        public string BlockName { get; set; }
-    }
+    public Guid HousingId { get; set; }
+    public string BlockName { get; set; } = string.Empty;
+    public byte ElevatorCount { get; set; }
+    public byte TotalFloors { get; set; }
 }
+

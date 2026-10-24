@@ -34,9 +34,19 @@ export class ApartmentsListComponent implements OnInit {
   acikSiteler: { [housingId: string]: boolean } = {};
   bloklarMap: { [housingId: string]: BlockDto[] } = {};
   blokYukleniyorMap: { [housingId: string]: boolean } = {};
-  yeniBlokAdiMap: { [housingId: string]: string } = {};
-  blokEkleniyorMap: { [housingId: string]: boolean } = {};
   blokHataMap: { [housingId: string]: string } = {};
+
+  // Block Modal (Add & Edit)
+  showBlockModal = false;
+  selectedBlockHousingId = '';
+  selectedBlockId = '';
+  blockForm: CreateOrUpdateBlock = {
+    blockName: '',
+    totalFloors: 1,
+    elevatorCount: 0
+  };
+  blockFormError = '';
+  isBlockSaving = false;
 
   tipler: HousingTypeDto[] = [];
   readonly HousingType = HousingType;
@@ -54,7 +64,7 @@ export class ApartmentsListComponent implements OnInit {
   constructor(
     private housingService: HousingService,
     private eventService: EventService
-  ) {}
+  ) { }
 
   sehirDegisti() {
     const secili = this.sehirler.find(s => s.il === this.form.city);
@@ -106,7 +116,7 @@ export class ApartmentsListComponent implements OnInit {
     }
     // Kullanıcının orijinal aktif sitesini koru
     if (aktifHousingId) {
-      await firstValueFrom(this.housingService.changeHousing(aktifHousingId)).catch(() => {});
+      await firstValueFrom(this.housingService.changeHousing(aktifHousingId)).catch(() => { });
     }
   }
 
@@ -233,33 +243,74 @@ export class ApartmentsListComponent implements OnInit {
     try {
       await firstValueFrom(this.housingService.changeHousing(housingId));
       this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
-    } catch {
-      this.blokHataMap[housingId] = 'Bloklar yüklenirken bir hata oluştu.';
+    } catch (err: any) {
+      this.blokHataMap[housingId] = err.error?.error?.message || 'Bloklar yüklenirken bir hata oluştu.';
     } finally {
       this.blokYukleniyorMap[housingId] = false;
     }
   }
 
-  async blokEkle(housingId: string) {
-    const blokAdi = (this.yeniBlokAdiMap[housingId] || '').trim();
-    this.blokHataMap[housingId] = '';
-    if (!blokAdi) {
-      this.blokHataMap[housingId] = 'Blok adı boş olamaz.';
+  openAddBlockModal(housingId: string) {
+    this.selectedBlockHousingId = housingId;
+    this.selectedBlockId = '';
+    this.blockForm = {
+      blockName: '',
+      totalFloors: 1,
+      elevatorCount: 0
+    };
+    this.blockFormError = '';
+    this.showBlockModal = true;
+  }
+
+  openEditBlockModal(housingId: string, block: BlockDto) {
+    this.selectedBlockHousingId = housingId;
+    this.selectedBlockId = block.id || '';
+    this.blockForm = {
+      blockName: block.blockName || '',
+      totalFloors: block.totalFloors ?? 1,
+      elevatorCount: block.elevatorCount ?? 0
+    };
+    this.blockFormError = '';
+    this.showBlockModal = true;
+  }
+
+  async saveBlock() {
+    const blockName = (this.blockForm.blockName || '').trim();
+    if (!blockName) {
+      this.blockFormError = 'Blok adı boş olamaz.';
       return;
     }
+    const totalFloors = Number(this.blockForm.totalFloors) || 1;
+    const elevatorCount = this.blockForm.elevatorCount !== undefined && this.blockForm.elevatorCount !== null
+      ? Number(this.blockForm.elevatorCount)
+      : 0;
 
-    this.blokEkleniyorMap[housingId] = true;
+    const prop: CreateOrUpdateBlock = {
+      blockName,
+      totalFloors,
+      elevatorCount
+    };
+
+    this.isBlockSaving = true;
+    this.blockFormError = '';
     try {
-      await firstValueFrom(this.housingService.changeHousing(housingId));
-      const prop: CreateOrUpdateBlock = { blockName: blokAdi };
-      await firstValueFrom(this.housingService.createBlock(prop));
-      this.yeniBlokAdiMap[housingId] = '';
-      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
-    } catch {
-      this.blokHataMap[housingId] = 'Blok eklenirken bir hata oluştu.';
+      await firstValueFrom(this.housingService.changeHousing(this.selectedBlockHousingId));
+      if (this.selectedBlockId) {
+        await firstValueFrom(this.housingService.updateBlock(this.selectedBlockId, prop));
+      } else {
+        await firstValueFrom(this.housingService.createBlock(prop));
+      }
+      this.bloklarMap[this.selectedBlockHousingId] = await firstValueFrom(this.housingService.getBlockList());
+      this.showBlockModal = false;
+    } catch (err: any) {
+      this.blockFormError = err.error?.error?.message || (this.selectedBlockId ? 'Blok güncellenirken bir hata oluştu.' : 'Blok eklenirken bir hata oluştu.');
     } finally {
-      this.blokEkleniyorMap[housingId] = false;
+      this.isBlockSaving = false;
     }
+  }
+
+  async updateBlock() {
+    await this.saveBlock();
   }
 
   async blokSil(housingId: string, blokId: string) {

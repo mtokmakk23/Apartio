@@ -77,6 +77,11 @@ Bu dosya, Apartio projesinde çalışan tüm yapay zeka asistanları (Antigravit
 - **Asenkron Metotlar ve `Async` Soneki:**
   - ABP Framework, Auto API Controllers mekanizmasıyla REST rotalarını ve Angular proxy üretimini `Async` soneki kuralına göre yönetir (örn: `GetListAsync` ➔ `/api/app/housing`).
   - API ve proxy uyumluluğu için backend asenkron metotlarında `Async` soneki korunmalı ve sorgulara `CancellationToken cancellationToken = default` iletilmelidir.
+- **Uygun Veri Tipleri (Domain-Driven Data Types):**
+  - Entity ve DTO alanlarında alışkanlıkla doğrudan `int`, `long` veya `double` kullanılmamalı; domainin gerçek sınırlarına ve saklama verimliliğine uygun veri tipleri seçilmelidir:
+    - Küçük sayımlar için `byte` (SQL Server'da `tinyint`, 0-255).
+    - Orta büyüklükteki sayımlar veya aralıklar için `short` (SQL Server'da `smallint`, -32.768..32.767).
+    - Alan (m²), ağırlık veya finansal/parasal tutarlar için `float`/`double` yerine hassasiyeti belirlenmiş `decimal(p,s)` (örn: `decimal(6,2)` veya `decimal(18,2)`).
 
 ---
 
