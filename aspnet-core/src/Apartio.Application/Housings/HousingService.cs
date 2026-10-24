@@ -9,314 +9,295 @@ using Volo.Abp;
 namespace Apartio.Housings;
 
 [Authorize]
-public class HousingService : ApartioAppService, IHousingAppService
+public class HousingService(
+    IHousingRepository housingRepository,
+    IUserMatchHousingRepository userMatchHousingRepository,
+    IMemoryCache cache,
+    IBlockRepository blockRepository,
+    ICircleRepository circleRepository,
+    IUnitRepository unitRepository,
+    IHousingTypeRepository housingTypeRepository) : ApartioAppService, IHousingAppService
 {
-	private readonly IHousingRepository _housingRepository;
-	private readonly IUserMatchHousingRepository _userMatchHousingRepository;
-	private readonly IMemoryCache _cache;
-	private readonly IBlockRepository _blockRepository;
-	private readonly ICircleRepository _circleRepository;
-	private readonly IUnitRepository _unitRepository;
-	private readonly IHousingTypeRepository _housingTypeRepository;
+    public async Task CreateHousingAsync(CreateOrUpdateHousing prop)
+    {
+        var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate, prop.LastPaymentDay);
+        await housingRepository.InsertAsync(property, autoSave: true);
+    }
 
-	public HousingService(
-		IHousingRepository housingRepository,
-		IUserMatchHousingRepository userMatchHousingRepository,
-		IMemoryCache cache,
-		IBlockRepository blockRepository,
-		ICircleRepository circleRepository,
-		IUnitRepository unitRepository,
-		IHousingTypeRepository housingTypeRepository)
-	{
-		_housingRepository = housingRepository;
-		_userMatchHousingRepository = userMatchHousingRepository;
-		_cache = cache;
-		_blockRepository = blockRepository;
-		_circleRepository = circleRepository;
-		_unitRepository = unitRepository;
-		_housingTypeRepository = housingTypeRepository;
-	}
+    public async Task DeleteAsync(Guid id)
+    {
+        var property = await housingRepository.GetAsync(id);
+        await housingRepository.DeleteAsync(property, autoSave: true);
+    }
 
-	public async Task CreateHousingAsync(CreateOrUpdateHousing prop)
-	{
-		var property = new Housing(prop.Name, prop.City, prop.Town, prop.Type, prop.Adress, prop.PostalCode, prop.Email, prop.Phone, prop.IsDelayCompensation, prop.DelayCompensationRate, prop.LastPaymentDay);
-		await _housingRepository.InsertAsync(property, autoSave: true);
-	}
+    public async Task<HousingDto> GetAsync(Guid id)
+    {
+        var housingQuery = await housingRepository.GetQueryableAsync();
+        var typeQuery = await housingTypeRepository.GetQueryableAsync();
 
-	public async Task DeleteAsync(Guid id)
-	{
-		var property = await _housingRepository.GetAsync(id);
-		await _housingRepository.DeleteAsync(property, autoSave: true);
-	}
+        var query = from h in housingQuery
+                    join t in typeQuery on h.Type equals t.Id into types
+                    from t in types.DefaultIfEmpty()
+                    where h.Id == id
+                    select new HousingDto
+                    {
+                        Id = h.Id,
+                        Name = h.Name,
+                        City = h.City,
+                        Town = h.Town,
+                        Adress = h.Adress,
+                        PostalCode = h.PostalCode,
+                        Email = h.Email,
+                        Phone = h.Phone,
+                        Type = h.Type,
+                        TypeName = t != null ? t.Name : null,
+                        IsDelayCompensation = h.IsDelayCompensation,
+                        DelayCompensationRate = h.DelayCompensationRate,
+                        LastPaymentDay = h.LastPaymentDay
+                    };
 
-	public async Task<HousingDto> GetAsync(Guid id)
-	{
-		var housingQuery = await _housingRepository.GetQueryableAsync();
-		var typeQuery = await _housingTypeRepository.GetQueryableAsync();
+        var result = await AsyncExecuter.FirstOrDefaultAsync(query);
+        return result ?? throw new UserFriendlyException("Konut bulunamadı!");
+    }
 
-		var query = from h in housingQuery
-					join t in typeQuery on h.Type equals t.Id into types
-					from t in types.DefaultIfEmpty()
-					where h.Id == id
-					select new HousingDto
-					{
-						Id = h.Id,
-						Name = h.Name,
-						City = h.City,
-						Town = h.Town,
-						Adress = h.Adress,
-						PostalCode = h.PostalCode,
-						Email = h.Email,
-						Phone = h.Phone,
-						Type = h.Type,
-						TypeName = t != null ? t.Name : null,
-						IsDelayCompensation = h.IsDelayCompensation,
-						DelayCompensationRate = h.DelayCompensationRate,
-						LastPaymentDay = h.LastPaymentDay
-					};
+    public async Task<List<HousingDto>> GetListAsync()
+    {
+        var housingQuery = await housingRepository.GetQueryableAsync();
+        var typeQuery = await housingTypeRepository.GetQueryableAsync();
 
-		var result = await AsyncExecuter.FirstOrDefaultAsync(query);
-		if (result == null)
-		{
-			throw new UserFriendlyException("Konut bulunamadı!");
-		}
-		return result;
-	}
+        var query = from h in housingQuery
+                    join t in typeQuery on h.Type equals t.Id into types
+                    from t in types.DefaultIfEmpty()
+                    select new HousingDto
+                    {
+                        Id = h.Id,
+                        Name = h.Name,
+                        City = h.City,
+                        Town = h.Town,
+                        Adress = h.Adress,
+                        PostalCode = h.PostalCode,
+                        Email = h.Email,
+                        Phone = h.Phone,
+                        Type = h.Type,
+                        TypeName = t == null ? null : t.Name,
+                        IsDelayCompensation = h.IsDelayCompensation,
+                        DelayCompensationRate = h.DelayCompensationRate,
+                        LastPaymentDay = h.LastPaymentDay
+                    };
 
-	public async Task<List<HousingDto>> GetListAsync()
-	{
-		var housingQuery = await _housingRepository.GetQueryableAsync();
-		var typeQuery = await _housingTypeRepository.GetQueryableAsync();
+        return await AsyncExecuter.ToListAsync(query);
+    }
 
-		var query = from h in housingQuery
-					join t in typeQuery on h.Type equals t.Id into types
-					from t in types.DefaultIfEmpty()
-					select new HousingDto
-					{
-						Id = h.Id,
-						Name = h.Name,
-						City = h.City,
-						Town = h.Town,
-						Adress = h.Adress,
-						PostalCode = h.PostalCode,
-						Email = h.Email,
-						Phone = h.Phone,
-						Type = h.Type,
-						TypeName = t != null ? t.Name : null,
-						IsDelayCompensation = h.IsDelayCompensation,
-						DelayCompensationRate = h.DelayCompensationRate,
-						LastPaymentDay = h.LastPaymentDay
-					};
+    public async Task<List<HousingTypeDto>> GetHousingTypeListAsync()
+    {
+        var list = await housingTypeRepository.GetListAsync();
+        return ObjectMapper.Map<List<HousingType>, List<HousingTypeDto>>(list);
+    }
 
-		return await AsyncExecuter.ToListAsync(query);
-	}
+    public async Task UpdateHousingAsync(Guid id, CreateOrUpdateHousing prop)
+    {
+        var property = await housingRepository.GetAsync(id);
+        property.setAdress(prop.Adress);
+        property.setCity(prop.City);
+        property.setEmail(prop.Email);
+        property.setName(prop.Name);
+        property.setPhone(prop.Phone);
+        property.setPostalCode(prop.PostalCode);
+        property.setTown(prop.Town);
+        property.setType(prop.Type);
+        property.setIsDelayCompensation(prop.IsDelayCompensation);
+        property.setDelayCompensationRate(prop.DelayCompensationRate);
+        property.LastPaymentDay = prop.LastPaymentDay;
 
-	public async Task<List<HousingTypeDto>> GetHousingTypeListAsync()
-	{
-		var list = await _housingTypeRepository.GetListAsync();
-		return ObjectMapper.Map<List<HousingType>, List<HousingTypeDto>>(list);
-	}
+        await housingRepository.UpdateAsync(property, autoSave: true);
+    }
 
-	public async Task UpdateHousingAsync(Guid id, CreateOrUpdateHousing prop)
-	{
-		var property = await _housingRepository.GetAsync(id);
-		property.setAdress(prop.Adress);
-		property.setCity(prop.City);
-		property.setEmail(prop.Email);
-		property.setName(prop.Name);
-		property.setPhone(prop.Phone);
-		property.setPostalCode(prop.PostalCode);
-		property.setTown(prop.Town);
-		property.setType(prop.Type);
-		property.setIsDelayCompensation(prop.IsDelayCompensation);
-		property.setDelayCompensationRate(prop.DelayCompensationRate);
-		property.LastPaymentDay = prop.LastPaymentDay;
+    public async Task ChangeHousingAsync(Guid housingId)
+    {
+        var cacheKey = $"user:{CurrentUser.Id}";
+        var housing = await housingRepository.GetListAsync(x => x.Id == housingId);
+        if (housing.Count > 0)
+        {
+            var userMatchHousing = await userMatchHousingRepository.GetListAsync(x => x.UserId == CurrentUser.Id);
+            if (userMatchHousing.Count > 0)
+            {
+                var prop = userMatchHousing[0];
+                prop.HousingId = housingId;
+                await userMatchHousingRepository.UpdateAsync(prop, autoSave: true);
+                cache.Remove(cacheKey);
+            }
+            else
+            {
+                var currentUser = CurrentUser.Id is null ? Guid.Empty : (Guid)CurrentUser.Id;
+                var newUserMatchHousing = new UserMatchHousing(currentUser, housingId);
+                await userMatchHousingRepository.InsertAsync(newUserMatchHousing, autoSave: true);
+                cache.Remove(cacheKey);
+            }
+        }
+        else throw new UserFriendlyException("Konut Bulunamadı!");
+    }
 
-		await _housingRepository.UpdateAsync(property, autoSave: true);
-	}
+    public async Task<HousingDto> GetSelectedHousingAsync()
+    {
+        var currentUserId = CurrentUser.Id is null ? Guid.Empty : (Guid)CurrentUser.Id;
+        var cacheKey = $"user:{currentUserId}";
 
-	public async Task ChangeHousingAsync(Guid housingId)
-	{
-		var cacheKey = $"user:{CurrentUser.Id}";
-		var housing = await _housingRepository.GetListAsync(x => x.Id == housingId);
-		if (housing.Count > 0)
-		{
-			var userMatchHousing = await _userMatchHousingRepository.GetListAsync(x => x.UserId == CurrentUser.Id);
-			if (userMatchHousing.Count > 0)
-			{
-				var prop = userMatchHousing[0];
-				prop.HousingId = housingId;
-				await _userMatchHousingRepository.UpdateAsync(prop, autoSave: true);
-				_cache.Remove(cacheKey);
-			}
-			else
-			{
-				var newUserMatchHousing = new UserMatchHousing((Guid)CurrentUser.Id, housingId);
-				await _userMatchHousingRepository.InsertAsync(newUserMatchHousing, autoSave: true);
-				_cache.Remove(cacheKey);
-			}
-		}
-		else throw new UserFriendlyException("Konut Bulunamadı!");
-	}
+        // 1. CACHE CHECK
+        if (cache.TryGetValue(cacheKey, out HousingDto? prop))
+        {
+            return prop ?? new();
+        }
 
-	public async Task<HousingDto> GetSelectedHousingAsync()
-	{
-		var cacheKey = $"user:{CurrentUser.Id}";
+        HousingDto _prop;
+        // 2. DB FETCH
+        var userMatchHousing = await userMatchHousingRepository.GetListAsync(x => x.UserId == CurrentUser.Id);
+        if (userMatchHousing.Count > 0)
+        {
+            _prop = await GetAsync(userMatchHousing[0].HousingId);
+        }
+        else
+        {
+            _prop = (await GetListAsync()).FirstOrDefault() ?? new();
+        }
 
-		// 1. CACHE CHECK
-		if (_cache.TryGetValue(cacheKey, out HousingDto prop))
-		{
-			return prop;
-		}
+        if (_prop == null)
+            return new();
 
-		HousingDto _prop;
-		// 2. DB FETCH
-		var userMatchHousing = await _userMatchHousingRepository.GetListAsync(x => x.UserId == CurrentUser.Id);
-		if (userMatchHousing.Count > 0)
-		{
-			_prop = await GetAsync(userMatchHousing[0].HousingId);
-		}
-		else
-		{
-			_prop = (await GetListAsync()).FirstOrDefault();
-		}
+        // 3. CACHE WRITE
+        cache.Set(cacheKey, _prop, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+            SlidingExpiration = TimeSpan.FromMinutes(2)
+        });
 
-		if (_prop == null)
-			return null;
+        return _prop;
+    }
 
-		// 3. CACHE WRITE
-		_cache.Set(cacheKey, _prop, new MemoryCacheEntryOptions
-		{
-			AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
-			SlidingExpiration = TimeSpan.FromMinutes(2)
-		});
+    public async Task<List<BlockDto>> GetBlockListAsync()
+    {
+        var housing = await GetSelectedHousingAsync();
+        return ObjectMapper.Map<List<Block>, List<BlockDto>>(await blockRepository.GetListAsync(x => x.HousingId == housing.Id));
+    }
 
-		return _prop;
-	}
+    public async Task DeleteBlock(Guid id)
+    {
+        var block = await blockRepository.GetAsync(id);
+        await blockRepository.DeleteAsync(block, autoSave: true);
+    }
 
-	public async Task<List<BlockDto>> GetBlockListAsync()
-	{
-		var housing = await GetSelectedHousingAsync();
-		return ObjectMapper.Map<List<Block>, List<BlockDto>>(await _blockRepository.GetListAsync(x => x.HousingId == housing.Id));
-	}
+    public async Task CreateBlockAsync(CreateOrUpdateBlock prop)
+    {
+        var housing = await GetSelectedHousingAsync();
+        var block = new Block(housing.Id, prop.BlockName, prop.ElevatorCount, prop.TotalFloors);
+        await blockRepository.InsertAsync(block, autoSave: true);
+    }
 
-	public async Task DeleteBlock(Guid id)
-	{
-		var block = await _blockRepository.GetAsync(id);
-		await _blockRepository.DeleteAsync(block, autoSave: true);
-	}
+    public async Task UpdateBlockAsync(Guid id, CreateOrUpdateBlock prop)
+    {
+        var block = await blockRepository.GetAsync(id);
+        block.SetBlockName(prop.BlockName);
+        block.SetElevatorCount(prop.ElevatorCount);
+        block.SetTotalFloors(prop.TotalFloors);
+        await blockRepository.UpdateAsync(block, autoSave: true);
+    }
 
-	public async Task CreateBlockAsync(CreateOrUpdateBlock prop)
-	{
-		var housing = await GetSelectedHousingAsync();
-		var block = new Block(housing.Id, prop.BlockName);
-		await _blockRepository.InsertAsync(block, autoSave: true);
-	}
+    public async Task UpdateCircleAsync(Guid id, CreateOrUpdateCircle prop)
+    {
+        var circle = await circleRepository.GetAsync(id);
+        circle.SetCircleName(prop.CircleName);
+        circle.BlockId = prop.BlockId;
+        circle.HomeOwnerId = prop.HomeOwnerId;
+        circle.HirerId = prop.HirerId;
+        await circleRepository.UpdateAsync(circle, autoSave: true);
+    }
 
-	public async Task UpdateBlockAsync(Guid id, CreateOrUpdateBlock prop)
-	{
-		var block = await _blockRepository.GetAsync(id);
-		block.SetBlockName(prop.BlockName);
-		await _blockRepository.UpdateAsync(block, autoSave: true);
-	}
+    public async Task CreateCircleAsync(CreateOrUpdateCircle prop)
+    {
+        var circle = new Circle(prop.BlockId, prop.CircleName, prop.HomeOwnerId, prop.HirerId);
+        await circleRepository.InsertAsync(circle, autoSave: true);
+    }
 
-	public async Task UpdateCircleAsync(Guid id, CreateOrUpdateCircle prop)
-	{
-		var circle = await _circleRepository.GetAsync(id);
-		circle.SetCircleName(prop.CircleName);
-		circle.BlockId = prop.BlockId;
-		circle.HomeOwnerId = prop.HomeOwnerId;
-		circle.HirerId = prop.HirerId;
-		await _circleRepository.UpdateAsync(circle, autoSave: true);
-	}
+    public async Task DeleteCircle(Guid id)
+    {
+        var circle = await circleRepository.GetAsync(id);
+        await circleRepository.DeleteAsync(circle, autoSave: true);
+    }
 
-	public async Task CreateCircleAsync(CreateOrUpdateCircle prop)
-	{
-		var circle = new Circle(prop.BlockId, prop.CircleName, prop.HomeOwnerId, prop.HirerId);
-		await _circleRepository.InsertAsync(circle, autoSave: true);
-	}
+    public async Task<List<CircleDto>> GetCircleListAsync(Guid blockId)
+    {
+        var circleQuery = await circleRepository.GetQueryableAsync();
+        var blockQuery = await blockRepository.GetQueryableAsync();
+        var housing = await GetSelectedHousingAsync();
 
-	public async Task DeleteCircle(Guid id)
-	{
-		var circle = await _circleRepository.GetAsync(id);
-		await _circleRepository.DeleteAsync(circle, autoSave: true);
-	}
+        var circles = from c in circleQuery
+                      join b in blockQuery on c.BlockId equals b.Id
+                      where b.HousingId == housing.Id && c.BlockId == blockId
+                      select c;
+        return ObjectMapper.Map<List<Circle>, List<CircleDto>>([.. circles]);
+    }
 
-	public async Task<List<CircleDto>> GetCircleListAsync(Guid blockId)
-	{
-		var circleQuery = await _circleRepository.GetQueryableAsync();
-		var blockQuery = await _blockRepository.GetQueryableAsync();
-		var housing = await GetSelectedHousingAsync();
+    public async Task CreateUnitAsync(CreateOrUpdateUnit prop)
+    {
+        var unit = new Unit(
+            prop.BlockId,
+            string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber,
+            prop.HomeOwnerId,
+            prop.HirerId,
+            prop.UnitType,
+            prop.Floor,
+            prop.GrossSquareMeters,
+            prop.NetSquareMeters);
+        await unitRepository.InsertAsync(unit, autoSave: true);
+    }
 
-		var circles = from c in circleQuery
-					  join b in blockQuery on c.BlockId equals b.Id
-					  where b.HousingId == housing.Id && c.BlockId == blockId
-					  select c;
-		return ObjectMapper.Map<List<Circle>, List<CircleDto>>(circles.ToList());
-	}
+    public async Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop)
+    {
+        var unit = await unitRepository.GetAsync(id);
+        unit.SetUnitNumber(string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber);
+        unit.BlockId = prop.BlockId;
+        unit.HomeOwnerId = prop.HomeOwnerId;
+        unit.HirerId = prop.HirerId;
+        unit.UnitType = string.IsNullOrWhiteSpace(prop.UnitType) ? "Daire" : prop.UnitType;
+        unit.Floor = prop.Floor;
+        unit.GrossSquareMeters = prop.GrossSquareMeters;
+        unit.NetSquareMeters = prop.NetSquareMeters;
+        await unitRepository.UpdateAsync(unit, autoSave: true);
+    }
 
-	public async Task CreateUnitAsync(CreateOrUpdateUnit prop)
-	{
-		var unit = new Unit(
-			prop.BlockId,
-			string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber,
-			prop.HomeOwnerId,
-			prop.HirerId,
-			prop.UnitType,
-			prop.Floor,
-			prop.GrossSquareMeters,
-			prop.NetSquareMeters);
-		await _unitRepository.InsertAsync(unit, autoSave: true);
-	}
+    public async Task DeleteUnitAsync(Guid id)
+    {
+        var unit = await unitRepository.GetAsync(id);
+        await unitRepository.DeleteAsync(unit, autoSave: true);
+    }
 
-	public async Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop)
-	{
-		var unit = await _unitRepository.GetAsync(id);
-		unit.SetUnitNumber(string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber);
-		unit.BlockId = prop.BlockId;
-		unit.HomeOwnerId = prop.HomeOwnerId;
-		unit.HirerId = prop.HirerId;
-		unit.UnitType = string.IsNullOrWhiteSpace(prop.UnitType) ? "Daire" : prop.UnitType;
-		unit.Floor = prop.Floor;
-		unit.GrossSquareMeters = prop.GrossSquareMeters;
-		unit.NetSquareMeters = prop.NetSquareMeters;
-		await _unitRepository.UpdateAsync(unit, autoSave: true);
-	}
+    public async Task<List<UnitDto>> GetUnitListAsync()
+    {
+        var unitQuery = await unitRepository.GetQueryableAsync();
+        var blockQuery = await blockRepository.GetQueryableAsync();
+        var housing = await GetSelectedHousingAsync();
 
-	public async Task DeleteUnitAsync(Guid id)
-	{
-		var unit = await _unitRepository.GetAsync(id);
-		await _unitRepository.DeleteAsync(unit, autoSave: true);
-	}
+        if (housing == null)
+        {
+            return [];
+        }
 
-	public async Task<List<UnitDto>> GetUnitListAsync()
-	{
-		var unitQuery = await _unitRepository.GetQueryableAsync();
-		var blockQuery = await _blockRepository.GetQueryableAsync();
-		var housing = await GetSelectedHousingAsync();
+        var query = from u in unitQuery
+                    join b in blockQuery on u.BlockId equals b.Id
+                    where b.HousingId == housing.Id
+                    select new { Unit = u, b.BlockName };
 
-		if (housing == null)
-		{
-			return new List<UnitDto>();
-		}
+        var list = query.ToList();
+        return [.. list.Select(x =>
+        {
+            var dto = ObjectMapper.Map<Unit, UnitDto>(x.Unit);
+            dto.BlockName = x.BlockName;
+            return dto;
+        })];
+    }
 
-		var query = from u in unitQuery
-					join b in blockQuery on u.BlockId equals b.Id
-					where b.HousingId == housing.Id
-					select new { Unit = u, BlockName = b.BlockName };
-
-		var list = query.ToList();
-		return list.Select(x =>
-		{
-			var dto = ObjectMapper.Map<Unit, UnitDto>(x.Unit);
-			dto.BlockName = x.BlockName;
-			return dto;
-		}).ToList();
-	}
-
-	public async Task<List<UnitDto>> GetUnitListByBlockIdAsync(Guid blockId)
-	{
-		var units = await GetUnitListAsync();
-		return units.Where(x => x.BlockId == blockId).ToList();
-	}
+    public async Task<List<UnitDto>> GetUnitListByBlockIdAsync(Guid blockId)
+    {
+        var units = await GetUnitListAsync();
+        return [.. units.Where(x => x.BlockId == blockId)];
+    }
 }

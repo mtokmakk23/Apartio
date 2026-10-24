@@ -118,29 +118,16 @@
                           </span>
                         </div>
 
-                        <!-- Compact Add Block Form -->
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="input-group input-group-sm" style="width: 290px;">
-                            <span class="input-group-text bg-white border-end-0">
-                              <i class="ri-building-4-line text-muted"></i>
-                            </span>
-                            <input
-                              type="text"
-                              class="form-control form-control-sm border-start-0"
-                              placeholder="Yeni blok adı (örn: A Blok)"
-                              [(ngModel)]="yeniBlokAdiMap[a.id!]"
-                              (keyup.enter)="blokEkle(a.id!)"
-                            />
-                            <button
-                              class="btn btn-primary btn-sm"
-                              type="button"
-                              (click)="blokEkle(a.id!)"
-                              [disabled]="blokEkleniyorMap[a.id!]"
-                            >
-                              <span *ngIf="blokEkleniyorMap[a.id!]" class="spinner-border spinner-border-sm me-1"></span>
-                              Ekle
-                            </button>
-                          </div>
+                        <!-- Action Button to Open Add Block Modal -->
+                        <div>
+                          <button
+                            class="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                            type="button"
+                            (click)="openAddBlockModal(a.id!); $event.stopPropagation()"
+                          >
+                            <i class="ri-add-line fs-14"></i>
+                            <span>Yeni Blok Ekle</span>
+                          </button>
                         </div>
                       </div>
 
@@ -154,14 +141,16 @@
                         <span class="text-muted ms-2 fs-13">Bloklar yükleniyor...</span>
                       </div>
 
-                      <!-- Blocks Table (Row layout ready for future update/edit actions) -->
+                      <!-- Blocks Table -->
                       <div *ngIf="!blokYukleniyorMap[a.id!]" class="table-responsive bg-white rounded-3 border">
                         <table class="table table-sm table-hover align-middle mb-0">
                           <thead class="table-light">
                             <tr>
                               <th style="width: 50px;" class="text-center">#</th>
                               <th>Blok / Bina Adı</th>
-                              <th class="text-center" style="width: 100px;">İşlemler</th>
+                              <th class="text-center" style="width: 130px;">Toplam Kat</th>
+                              <th class="text-center" style="width: 140px;">Asansör Sayısı</th>
+                              <th class="text-center" style="width: 160px;">İşlemler</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -178,17 +167,35 @@
                                 </div>
                               </td>
                               <td class="text-center">
-                                <button
-                                  class="btn btn-sm btn-soft-danger py-1 px-2 fs-12"
-                                  (click)="blokSil(a.id!, blok.id!); $event.stopPropagation()"
-                                >
-                                  Sil
-                                </button>
+                                <span class="badge bg-light text-dark border px-2 py-1 fs-12">
+                                  <i class="ri-stack-line text-primary me-1"></i>{{ blok.totalFloors ?? 1 }} Kat
+                                </span>
+                              </td>
+                              <td class="text-center">
+                                <span class="badge bg-info-subtle text-info px-2 py-1 fs-12">
+                                  <i class="ri-arrow-up-down-line me-1"></i>{{ blok.elevatorCount ?? 0 }} Asansör
+                                </span>
+                              </td>
+                              <td class="text-center">
+                                <div class="d-inline-flex gap-1">
+                                  <button
+                                    class="btn btn-sm btn-soft-primary py-1 px-2 fs-12"
+                                    (click)="openEditBlockModal(a.id!, blok); $event.stopPropagation()"
+                                  >
+                                    Düzenle
+                                  </button>
+                                  <button
+                                    class="btn btn-sm btn-soft-danger py-1 px-2 fs-12"
+                                    (click)="blokSil(a.id!, blok.id!); $event.stopPropagation()"
+                                  >
+                                    Sil
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                             <tr *ngIf="(bloklarMap[a.id!] || []).length === 0">
-                              <td colspan="3" class="text-center text-muted py-3 fst-italic fs-13">
-                                <i class="ri-information-line me-1 text-info"></i>Bu siteye henüz blok eklenmemiş. Yukarıdaki formdan yeni blok ekleyebilirsiniz.
+                              <td colspan="5" class="text-center text-muted py-3 fst-italic fs-13">
+                                <i class="ri-information-line me-1 text-info"></i>Bu siteye henüz blok eklenmemiş. "Yeni Blok Ekle" butonunu kullanarak yeni blok ekleyebilirsiniz.
                               </td>
                             </tr>
                           </tbody>
@@ -388,3 +395,48 @@
     </div>
   </div>
 </div>
+
+<!-- Blok Ekle / Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showBlockModal" style="background:rgba(0,0,0,0.5)" (click)="showBlockModal = false">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="ri-building-4-line me-2"></i>
+          {{ selectedBlockId ? 'Blok Düzenle' : 'Yeni Blok Ekle' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="showBlockModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="blockFormError" class="alert alert-danger py-2 mb-3 fs-13">
+          <i class="ri-error-warning-line me-1"></i>{{ blockFormError }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Blok Adı <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="blockForm.blockName" placeholder="Örn: A Blok" />
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label class="form-label">Toplam Kat Sayısı <span class="text-danger">*</span></label>
+            <input type="number" min="1" max="255" class="form-control" [(ngModel)]="blockForm.totalFloors" placeholder="1" />
+            <small class="text-muted fs-11 d-block">1 - 255 arası</small>
+            <small class="text-muted fs-11 d-block">Zemin ve alt katlar dahil</small>
+          </div>
+          <div class="col-6 mb-3">
+            <label class="form-label">Asansör Sayısı <span class="text-danger">*</span></label>
+            <input type="number" min="0" max="15" class="form-control" [(ngModel)]="blockForm.elevatorCount" placeholder="0" />
+            <small class="text-muted fs-11">0 - 15 arası</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="showBlockModal = false">İptal</button>
+        <button type="button" class="btn btn-primary" (click)="saveBlock()" [disabled]="isBlockSaving">
+          <span *ngIf="isBlockSaving" class="spinner-border spinner-border-sm me-1"></span>
+          {{ selectedBlockId ? 'Güncelle' : 'Kaydet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

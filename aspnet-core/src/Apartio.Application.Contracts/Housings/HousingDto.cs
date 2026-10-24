@@ -5,9 +5,9 @@ namespace Apartio.Housings;
 
 public class HousingDto : EntityDto<Guid>
 {
-    public string Name { get; init; }
-    public string City { get; init; }
-    public string Town { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string City { get; init; } = string.Empty;
+    public string Town { get; init; } = string.Empty;
     public string? Adress { get; init; }
     public string? PostalCode { get; init; }
     public string? Email { get; init; }

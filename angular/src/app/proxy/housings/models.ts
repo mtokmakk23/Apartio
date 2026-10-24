@@ -12,6 +12,8 @@ export enum HousingType {
 export interface BlockDto extends EntityDto<string> {
   housingId?: string;
   blockName?: string;
+  elevatorCount?: number;
+  totalFloors?: number;
 }
 
 export interface CircleDto extends EntityDto<string> {
@@ -23,6 +25,8 @@ export interface CircleDto extends EntityDto<string> {
 
 export interface CreateOrUpdateBlock extends ExtensibleObject {
   blockName?: string;
+  elevatorCount?: number;
+  totalFloors?: number;
 }
 
 export interface CreateOrUpdateCircle extends ExtensibleObject {
