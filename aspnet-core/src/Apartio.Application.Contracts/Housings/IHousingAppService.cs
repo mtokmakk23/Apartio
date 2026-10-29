@@ -27,6 +27,10 @@ public interface IHousingAppService : IApplicationService
 
 	Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop);
 	Task CreateUnitAsync(CreateOrUpdateUnit prop);
+	Task CreateBulkUnitsAsync(CreateBulkUnitsDto prop);
+	Task UpdateBulkUnitsAsync(UpdateBulkUnitsDto prop);
+	Task DeleteUnitAsync(Guid id);
+	Task DeleteBulkUnitsAsync(DeleteBulkUnitsDto prop);
 	Task<List<UnitDto>> GetUnitListAsync();
 	Task<List<UnitDto>> GetUnitListByBlockIdAsync(Guid blockId);
 }

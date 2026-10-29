@@ -62,6 +62,31 @@ export interface CreateOrUpdateUnit extends ExtensibleObject {
   circleName?: string;
 }
 
+export interface CreateBulkUnitsDto extends ExtensibleObject {
+  blockId?: string;
+  units?: CreateOrUpdateUnit[];
+}
+
+export interface UpdateBulkUnitItemDto {
+  id: string;
+  blockId: string;
+  unitNumber: string;
+  unitType?: string;
+  floor: number;
+  grossSquareMeters?: number;
+  netSquareMeters?: number;
+  homeOwnerId?: string;
+  hirerId?: string;
+}
+
+export interface UpdateBulkUnitsDto extends ExtensibleObject {
+  units?: UpdateBulkUnitItemDto[];
+}
+
+export interface DeleteBulkUnitsDto extends ExtensibleObject {
+  unitIds?: string[];
+}
+
 export interface HousingDto extends EntityDto<string> {
   name?: string;
   city?: string;

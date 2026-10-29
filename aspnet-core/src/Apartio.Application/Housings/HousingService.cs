@@ -238,36 +238,124 @@ public class HousingService(
 
     public async Task CreateUnitAsync(CreateOrUpdateUnit prop)
     {
+        ArgumentNullException.ThrowIfNull(prop);
+
+        var block = await blockRepository.FindAsync(prop.BlockId);
         var unit = new Unit(
             prop.BlockId,
-            string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber,
+            string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber, prop.Floor,
             prop.HomeOwnerId,
             prop.HirerId,
             prop.UnitType,
-            prop.Floor,
             prop.GrossSquareMeters,
-            prop.NetSquareMeters);
+            prop.NetSquareMeters,
+            block?.TotalFloors);
         await unitRepository.InsertAsync(unit, autoSave: true);
+    }
+
+    public async Task CreateBulkUnitsAsync(CreateBulkUnitsDto prop)
+    {
+        ArgumentNullException.ThrowIfNull(prop);
+
+        if (prop.Units is null || prop.Units.Count == 0)
+        {
+            throw new UserFriendlyException("Eklenecek bağımsız bölüm listesi boş olamaz!");
+        }
+
+        var block = await blockRepository.FindAsync(prop.BlockId);
+        var maxFloors = block?.TotalFloors;
+
+        var units = prop.Units.Select(x => new Unit(
+            prop.BlockId,
+            string.IsNullOrWhiteSpace(x.UnitNumber) ? x.CircleName : x.UnitNumber,
+            x.Floor,
+            x.HomeOwnerId,
+            x.HirerId,
+            x.UnitType,
+            x.GrossSquareMeters,
+            x.NetSquareMeters,
+            maxFloors)).ToList();
+
+        await unitRepository.InsertManyAsync(units, autoSave: true);
     }
 
     public async Task UpdateUnitAsync(Guid id, CreateOrUpdateUnit prop)
     {
+        ArgumentNullException.ThrowIfNull(prop);
+
         var unit = await unitRepository.GetAsync(id);
+        var targetBlockId = prop.BlockId != Guid.Empty ? prop.BlockId : unit.BlockId;
+        var block = await blockRepository.FindAsync(targetBlockId);
+
         unit.SetUnitNumber(string.IsNullOrWhiteSpace(prop.UnitNumber) ? prop.CircleName : prop.UnitNumber);
-        unit.BlockId = prop.BlockId;
+        unit.BlockId = targetBlockId;
         unit.HomeOwnerId = prop.HomeOwnerId;
         unit.HirerId = prop.HirerId;
         unit.UnitType = string.IsNullOrWhiteSpace(prop.UnitType) ? "Daire" : prop.UnitType;
-        unit.Floor = prop.Floor;
+        unit.SetFloor(prop.Floor, block?.TotalFloors);
         unit.GrossSquareMeters = prop.GrossSquareMeters;
         unit.NetSquareMeters = prop.NetSquareMeters;
         await unitRepository.UpdateAsync(unit, autoSave: true);
+    }
+
+    public async Task UpdateBulkUnitsAsync(UpdateBulkUnitsDto prop)
+    {
+        ArgumentNullException.ThrowIfNull(prop);
+
+        if (prop.Units is null || prop.Units.Count == 0)
+        {
+            return;
+        }
+
+        var unitIds = prop.Units.Select(u => u.Id).ToList();
+        var units = await unitRepository.GetListAsync(u => unitIds.Contains(u.Id));
+
+        var blockIds = prop.Units.Select(u => u.BlockId).Where(id => id != Guid.Empty).Distinct().ToList();
+        var blocks = await blockRepository.GetListAsync(b => blockIds.Contains(b.Id));
+        var blockMap = blocks.ToDictionary(b => b.Id);
+
+        foreach (var item in prop.Units)
+        {
+            var unit = units.FirstOrDefault(u => u.Id == item.Id);
+            if (unit is null) continue;
+
+            var targetBlockId = item.BlockId != Guid.Empty ? item.BlockId : unit.BlockId;
+            blockMap.TryGetValue(targetBlockId, out var block);
+
+            if (!string.IsNullOrWhiteSpace(item.UnitNumber))
+            {
+                unit.SetUnitNumber(item.UnitNumber);
+            }
+
+            unit.BlockId = targetBlockId;
+            unit.HomeOwnerId = item.HomeOwnerId;
+            unit.HirerId = item.HirerId;
+            unit.UnitType = string.IsNullOrWhiteSpace(item.UnitType) ? "Daire" : item.UnitType;
+            unit.SetFloor(item.Floor, block?.TotalFloors);
+            unit.GrossSquareMeters = item.GrossSquareMeters;
+            unit.NetSquareMeters = item.NetSquareMeters;
+        }
+
+        await unitRepository.UpdateManyAsync(units, autoSave: true);
     }
 
     public async Task DeleteUnitAsync(Guid id)
     {
         var unit = await unitRepository.GetAsync(id);
         await unitRepository.DeleteAsync(unit, autoSave: true);
+    }
+
+    public async Task DeleteBulkUnitsAsync(DeleteBulkUnitsDto prop)
+    {
+        ArgumentNullException.ThrowIfNull(prop);
+
+        if (prop.UnitIds is null || prop.UnitIds.Count == 0)
+        {
+            return;
+        }
+
+        var units = await unitRepository.GetListAsync(u => prop.UnitIds.Contains(u.Id));
+        await unitRepository.DeleteManyAsync(units, autoSave: true);
     }
 
     public async Task<List<UnitDto>> GetUnitListAsync()

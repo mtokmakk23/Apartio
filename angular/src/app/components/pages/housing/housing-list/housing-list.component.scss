@@ -20,8 +20,43 @@
   &:hover { background-color: var(--vz-danger); color: #fff; }
 }
 
+.btn-soft-success {
+  background-color: rgba(var(--vz-success-rgb, 10, 179, 156), 0.1);
+  color: var(--vz-success, #0ab39c);
+  border: none;
+  &:hover { background-color: var(--vz-success, #0ab39c); color: #fff; }
+}
+
+.btn-soft-info {
+  background-color: rgba(var(--vz-info-rgb, 41, 156, 219), 0.1);
+  color: var(--vz-info, #299cdb);
+  border: none;
+  &:hover { background-color: var(--vz-info, #299cdb); color: #fff; }
+}
+
+.btn-soft-secondary {
+  background-color: rgba(var(--vz-secondary-rgb, 116, 120, 141), 0.1);
+  color: var(--vz-secondary, #74788d);
+  border: none;
+  &:hover { background-color: var(--vz-secondary, #74788d); color: #fff; }
+}
+
+.table-active {
+  background-color: rgba(var(--vz-primary-rgb), 0.05) !important;
+}
+
 .avatar-sm {
   height: 3rem;
   width: 3rem;
   .avatar-title { font-size: 1.25rem; }
 }
+
+.avatar-xs {
+  height: 2rem;
+  width: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  .avatar-title { font-size: 0.95rem; }
+}
+
