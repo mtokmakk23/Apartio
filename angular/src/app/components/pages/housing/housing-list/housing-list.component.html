@@ -19,7 +19,7 @@
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
           <p class="text-muted mb-1">Toplam Bağımsız Bölüm</p>
-          <h3 class="mb-0">{{ toplamBirim() }}</h3>
+          <h3 class="mb-0">{{ getTotalUnitsCount() }}</h3>
         </div>
         <div class="avatar-sm">
           <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
@@ -34,7 +34,7 @@
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
           <p class="text-muted mb-1">Mülk Sahibi Oturan</p>
-          <h3 class="mb-0 text-success">{{ toplamSahipli() }}</h3>
+          <h3 class="mb-0 text-success">{{ getOwnerOccupiedCount() }}</h3>
         </div>
         <div class="avatar-sm">
           <span class="avatar-title rounded-circle bg-success-subtle text-success fs-2">
@@ -49,7 +49,7 @@
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
           <p class="text-muted mb-1">Kiracılı Birimler</p>
-          <h3 class="mb-0 text-warning">{{ toplamKiracili() }}</h3>
+          <h3 class="mb-0 text-warning">{{ getTenantOccupiedCount() }}</h3>
         </div>
         <div class="avatar-sm">
           <span class="avatar-title rounded-circle bg-warning-subtle text-warning fs-2">
@@ -61,40 +61,79 @@
   </div>
 </div>
 
+<!-- Hata Bildirimi -->
+<div class="row" *ngIf="generalError">
+  <div class="col-12">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="ri-error-warning-line me-2 align-middle fs-16"></i>{{ generalError }}
+      <button type="button" class="btn-close" (click)="generalError = ''"></button>
+    </div>
+  </div>
+</div>
+
 <!-- Tablo -->
 <div class="row">
   <div class="col-12">
     <div class="card">
       <div class="card-header">
         <div class="row align-items-center g-2">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="form-icon right">
               <input type="search" class="form-control form-control-icon"
                 placeholder="Kapı no veya sakin ara..."
-                [(ngModel)]="aramaMetni" (input)="filtrele()" />
+                [(ngModel)]="searchText" (input)="filterUnits()" />
               <i class="ri-search-line"></i>
             </div>
           </div>
-          <div class="col-md-3">
-            <select class="form-select" [(ngModel)]="secilenBlok" (change)="filtrele()">
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="selectedBlockId" (change)="filterUnits()">
               <option value="">Tüm Bloklar</option>
-              <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
+              <option *ngFor="let b of blocks" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
           <div class="col-md-2">
-            <select class="form-select" [(ngModel)]="secilenTip" (change)="filtrele()">
+            <select class="form-select" [(ngModel)]="selectedUnitType" (change)="filterUnits()">
               <option value="">Tüm Türler</option>
-              <option *ngFor="let t of BIRIM_TIPLERI" [value]="t">{{ t }}</option>
+              <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
             </select>
           </div>
-          <div class="col-md-3 text-end">
-            <button class="btn btn-primary btn-sm btn-label" (click)="yeniUnitEkle()">
+          <div class="col-md-5 text-end d-flex justify-content-end gap-2">
+            <button class="btn btn-soft-info btn-sm btn-label" (click)="openBulkEditModal()">
+              <i class="ri-edit-2-line label-icon align-middle fs-16 me-2"></i>
+              Toplu Düzenle
+              <span *ngIf="getSelectedCount() > 0" class="badge bg-info text-white ms-1">{{ getSelectedCount() }}</span>
+            </button>
+            <button class="btn btn-soft-success btn-sm btn-label" (click)="openBulkModal()">
+              <i class="ri-stack-line label-icon align-middle fs-16 me-2"></i>
+              Toplu Daire Ekle
+            </button>
+            <button class="btn btn-primary btn-sm btn-label" (click)="openCreateModal()">
               <i class="ri-add-line label-icon align-middle fs-16 me-2"></i>
               Yeni Birim Ekle
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Çoklu Seçim Aksiyon Çubuğu -->
+      <div *ngIf="getSelectedCount() > 0" class="alert alert-primary bg-primary-subtle border-primary-subtle text-primary d-flex flex-wrap align-items-center justify-content-between py-2 px-3 mb-0 rounded-0">
+        <div class="d-flex align-items-center">
+          <i class="ri-checkbox-multiple-line fs-18 me-2"></i>
+          <span class="fw-semibold">{{ getSelectedCount() }} daire seçildi</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-primary" (click)="openBulkEditModal()">
+            <i class="ri-edit-line me-1"></i> Seçilenleri Toplu Düzenle
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="openBulkDeleteModal()">
+            <i class="ri-delete-bin-line me-1"></i> Seçilenleri Sil
+          </button>
+          <button class="btn btn-sm btn-soft-secondary" (click)="clearSelection()">
+            Seçimi Temizle
+          </button>
+        </div>
+      </div>
+
       <div class="card-body p-0">
         <div *ngIf="loading" class="text-center py-5">
           <div class="spinner-border text-primary" role="status"></div>
@@ -104,7 +143,18 @@
           <table class="table table-hover table-nowrap align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>No / Kapı</th>
+                <th style="width: 40px;" class="text-center">
+                  <input type="checkbox" class="form-check-input"
+                    [checked]="isAllSelected()"
+                    [indeterminate]="isIndeterminate()"
+                    (change)="toggleSelectAll()"
+                    title="Tümünü Seç / Seçimi Kaldır" />
+                </th>
+                <th (click)="sortByUnitNumber()" style="cursor: pointer; user-select: none;" title="Daire Numarasına Göre Sırala">
+                  No / Kapı
+                  <i class="ri-arrow-up-s-line fs-14 ms-1 text-primary" *ngIf="sortColumn === 'unitNumber' && sortDirection === 'asc'"></i>
+                  <i class="ri-arrow-down-s-line fs-14 ms-1 text-primary" *ngIf="sortColumn === 'unitNumber' && sortDirection === 'desc'"></i>
+                </th>
                 <th>Tür</th>
                 <th>Kat</th>
                 <th>Alan (m²)</th>
@@ -115,7 +165,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let unit of filteredUnits">
+              <tr *ngFor="let unit of filteredUnits" [class.table-active]="selectedUnitIds.has(unit.id!)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input type="checkbox" class="form-check-input"
+                    [checked]="selectedUnitIds.has(unit.id!)"
+                    (change)="toggleSelectUnit(unit.id!)" />
+                </td>
                 <td>
                   <strong>{{ unit.unitNumber || unit.circleName }}</strong>
                 </td>
@@ -140,7 +195,7 @@
                   </div>
                   <span *ngIf="!unit.grossSquareMeters && !unit.netSquareMeters" class="text-muted">—</span>
                 </td>
-                <td>{{ unit.blockName || blokAdi(unit.blockId) }}</td>
+                <td>{{ unit.blockName || getBlockName(unit.blockId) }}</td>
                 <td>
                   <span *ngIf="unit.homeOwnerName">
                     <i class="ri-user-line me-1 text-muted"></i>{{ unit.homeOwnerName }}
@@ -154,16 +209,16 @@
                   <span *ngIf="!unit.hirerName" class="text-muted">—</span>
                 </td>
                 <td class="text-center">
-                  <button class="btn btn-sm btn-soft-primary me-1" (click)="duzenle(unit)" title="Düzenle">
-                    <i class="ri-edit-line"></i>
+                  <button class="btn btn-sm btn-soft-primary me-1" (click)="openEditModal(unit)">
+                    <i class="ri-edit-line me-1"></i> Düzenle
                   </button>
-                  <button class="btn btn-sm btn-soft-danger" (click)="silmeOnayla(unit.id!)" title="Sil">
-                    <i class="ri-delete-bin-line"></i>
+                  <button class="btn btn-sm btn-soft-danger" (click)="confirmDelete(unit.id!)">
+                    <i class="ri-delete-bin-line me-1"></i> Sil
                   </button>
                 </td>
               </tr>
               <tr *ngIf="filteredUnits.length === 0">
-                <td colspan="8" class="text-center text-muted py-4">Kayıt bulunamadı</td>
+                <td colspan="9" class="text-center text-muted py-4">Kayıt bulunamadı</td>
               </tr>
             </tbody>
           </table>
@@ -173,16 +228,16 @@
   </div>
 </div>
 
-<!-- Ekle/Düzenle Modal -->
-<div class="modal fade show d-block" tabindex="-1" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
+<!-- Tekil Ekle/Düzenle Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isSingleModalOpen" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
           <i class="ri-building-line me-2"></i>
-          {{ seciliUnit ? 'Birim Düzenle' : 'Yeni Bağımsız Bölüm Ekle' }}
+          {{ selectedUnit ? 'Birim Düzenle' : 'Yeni Bağımsız Bölüm Ekle' }}
         </h5>
-        <button type="button" class="btn-close" (click)="showModal = false"></button>
+        <button type="button" class="btn-close" (click)="isSingleModalOpen = false"></button>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -193,19 +248,23 @@
           <div class="col-md-6 mb-3">
             <label class="form-label">Birim Türü <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="form.unitType">
-              <option *ngFor="let t of BIRIM_TIPLERI" [value]="t">{{ t }}</option>
+              <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
             </select>
           </div>
           <div class="col-md-3 mb-3">
             <label class="form-label">Blok / Yapı <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="form.blockId">
               <option value="">Seçiniz</option>
-              <option *ngFor="let b of bloklar" [value]="b.id">{{ b.blockName }}</option>
+              <option *ngFor="let b of blocks" [value]="b.id">{{ b.blockName }}</option>
             </select>
           </div>
           <div class="col-md-3 mb-3">
-            <label class="form-label">Bulunduğu Kat</label>
-            <input type="number" class="form-control" [(ngModel)]="form.floor" placeholder="1" />
+            <label class="form-label">
+              Bulunduğu Kat
+              <span *ngIf="getSelectedBlockMaxFloors()" class="text-muted fs-11">(Maks: {{ getSelectedBlockMaxFloors() }})</span>
+            </label>
+            <input type="number" class="form-control" [(ngModel)]="form.floor"
+              [max]="getSelectedBlockMaxFloors() || null" placeholder="1" />
           </div>
           <div class="col-md-3 mb-3">
             <label class="form-label">Brüt m²</label>
@@ -232,12 +291,12 @@
         </div>
       </div>
       <div class="modal-footer flex-column align-items-stretch">
-        <div *ngIf="validationHatasi" class="alert alert-danger py-2 mb-2 text-center">
-          <i class="ri-error-warning-line me-1"></i> {{ validationHatasi }}
+        <div *ngIf="validationError" class="alert alert-danger py-2 mb-2 text-center">
+          <i class="ri-error-warning-line me-1"></i> {{ validationError }}
         </div>
         <div class="d-flex justify-content-end gap-2">
-          <button class="btn btn-light" (click)="showModal = false; validationHatasi = ''">İptal</button>
-          <button class="btn btn-primary" (click)="kaydet()">
+          <button class="btn btn-light" (click)="isSingleModalOpen = false; validationError = ''">İptal</button>
+          <button class="btn btn-primary" (click)="saveUnit()">
             <i class="ri-save-line me-1"></i> Kaydet
           </button>
         </div>
@@ -246,8 +305,267 @@
   </div>
 </div>
 
+<!-- Toplu Daire Oluştur Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isBulkModalOpen" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-light py-3 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="avatar-xs me-2">
+            <span class="avatar-title rounded-circle bg-success-subtle text-success fs-16">
+              <i class="ri-stack-line"></i>
+            </span>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0 fw-bold">Toplu Bağımsız Bölüm (Daire) Oluşturma Sihirbazı</h5>
+            <p class="text-muted fs-12 mb-0">Seçili apartmanda bloğa ait daireleri hızlıca ve otomatik sıralamayla ekleyin.</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="isBulkModalOpen = false" [disabled]="isBulkSaving"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Aktif Apartman / Site Bilgisi -->
+        <div class="card bg-light border-0 mb-3">
+          <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center">
+              <div class="avatar-sm me-3 flex-shrink-0">
+                <span class="avatar-title rounded-3 bg-primary-subtle text-primary fs-20">
+                  <i class="ri-building-line"></i>
+                </span>
+              </div>
+              <div>
+                <span class="text-muted fs-11 text-uppercase fw-semibold">Aktif Çalışma Alanı / Apartman</span>
+                <h5 class="fs-15 mb-0 text-dark fw-bold">{{ selectedHousing?.name || 'Seçili Tesis / Site' }}</h5>
+                <span class="text-muted fs-12" *ngIf="selectedHousing?.city || selectedHousing?.town">
+                  {{ selectedHousing?.town }}{{ selectedHousing?.town && selectedHousing?.city ? ', ' : '' }}{{ selectedHousing?.city }}
+                </span>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                <i class="ri-checkbox-circle-fill me-1"></i> Aktif Tesis
+              </span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                {{ blocks.length }} Blok Kayıtlı
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Sol Kolon: Yapılandırma Parametreleri -->
+          <div class="col-lg-5">
+            <div class="card border mb-0 h-100">
+              <div class="card-header bg-light py-2">
+                <h6 class="card-title mb-0 fs-13 text-uppercase fw-semibold text-muted">
+                  <i class="ri-settings-4-line me-1 text-primary"></i> Oluşturma Parametreleri
+                </h6>
+              </div>
+              <div class="card-body">
+                <!-- Hedef Blok -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Hedef Blok / Yapı <span class="text-danger">*</span></label>
+                  <select class="form-select" [(ngModel)]="bulkForm.blockId" (ngModelChange)="onBulkBlockChange()" [disabled]="isBulkSaving">
+                    <option value="" disabled>Lütfen bir blok seçiniz</option>
+                    <option *ngFor="let b of blocks" [value]="b.id">{{ b.blockName }}</option>
+                  </select>
+                  <small class="text-muted" *ngIf="blocks.length === 0">
+                    <i class="ri-alert-line text-warning"></i> Sitede kayıtlı blok bulunamadı. Önce blok ekleyiniz.
+                  </small>
+                </div>
+
+                <!-- Adet & Birim Tipi -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Daire Adedi <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" min="1" max="300"
+                      [(ngModel)]="bulkForm.count" (ngModelChange)="generateBulkPreview()"
+                      [disabled]="isBulkSaving" />
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Birim Türü <span class="text-danger">*</span></label>
+                    <select class="form-select" [(ngModel)]="bulkForm.unitType"
+                      (ngModelChange)="generateBulkPreview()" [disabled]="isBulkSaving">
+                      <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Numaralandırma -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Başlangıç Kapı No <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" min="1"
+                      [(ngModel)]="bulkForm.startingNumber" (ngModelChange)="generateBulkPreview()"
+                      placeholder="1" [disabled]="isBulkSaving" />
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Kapı No Ön Ek</label>
+                    <input type="text" class="form-control"
+                      [(ngModel)]="bulkForm.prefix" (ngModelChange)="generateBulkPreview()"
+                      placeholder="Örn: D-, A- (Opsiyonel)" [disabled]="isBulkSaving" />
+                  </div>
+                </div>
+
+                <!-- Kat Dağılımı -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Başlangıç Katı</label>
+                    <input type="number" class="form-control"
+                      [(ngModel)]="bulkForm.startingFloor" (ngModelChange)="generateBulkPreview()"
+                      placeholder="1" [disabled]="isBulkSaving" />
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Kat Başına Daire</label>
+                    <input type="number" class="form-control" min="1" max="50"
+                      [(ngModel)]="bulkForm.unitsPerFloor" (ngModelChange)="generateBulkPreview()"
+                      placeholder="4" [disabled]="isBulkSaving" />
+                  </div>
+                  <div class="col-12">
+                    <div class="alert alert-info py-2 px-3 mb-0 fs-12">
+                      <i class="ri-information-line me-1"></i>
+                      <span>{{ getFloorDistributionSummary() }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Alan m² Bilgileri -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Brüt m²</label>
+                    <input type="number" class="form-control" min="0"
+                      [(ngModel)]="bulkForm.grossSquareMeters" (ngModelChange)="generateBulkPreview()"
+                      placeholder="Örn: 110" [disabled]="isBulkSaving" />
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label fw-semibold">Net m²</label>
+                    <input type="number" class="form-control" min="0"
+                      [(ngModel)]="bulkForm.netSquareMeters" (ngModelChange)="generateBulkPreview()"
+                      placeholder="Örn: 85" [disabled]="isBulkSaving" />
+                  </div>
+                </div>
+
+                <button class="btn btn-soft-primary btn-sm w-100" (click)="generateBulkPreview()" [disabled]="isBulkSaving">
+                  <i class="ri-refresh-line me-1"></i> Parametreleri Listeye Yeniden Uygula
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ Kolon: Canlı Önizleme ve Düzenleme Tablosu -->
+          <div class="col-lg-7">
+            <div class="card border mb-0 h-100">
+              <div class="card-header bg-light py-2 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <h6 class="card-title mb-0 fs-13 text-uppercase fw-semibold text-muted">
+                    <i class="ri-list-check me-1 text-success"></i> Canlı Daire Önizleme
+                  </h6>
+                  <span class="badge bg-success-subtle text-success fs-12">
+                    {{ bulkUnits.length }} Daire
+                  </span>
+                </div>
+                <button class="btn btn-sm btn-soft-success" (click)="addBulkPreviewRow()" [disabled]="isBulkSaving" title="Yeni Daire Satırı Ekle">
+                  <i class="ri-add-line me-1"></i> Satır Ekle
+                </button>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 440px; overflow-y: auto;">
+                  <table class="table table-sm table-nowrap align-middle mb-0">
+                    <thead class="table-light sticky-top">
+                      <tr>
+                        <th style="width: 45px;">#</th>
+                        <th>Kapı No <span class="text-danger">*</span></th>
+                        <th style="width: 120px;">Tür</th>
+                        <th style="width: 75px;">Kat</th>
+                        <th style="width: 85px;">Brüt m²</th>
+                        <th style="width: 85px;">Net m²</th>
+                        <th style="width: 45px;" class="text-center">Sil</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of bulkUnits; let i = index">
+                        <td class="text-muted small">{{ i + 1 }}</td>
+                        <td>
+                          <input type="text" class="form-control form-control-sm"
+                            [(ngModel)]="item.unitNumber" [disabled]="isBulkSaving"
+                            placeholder="Kapı no" />
+                        </td>
+                        <td>
+                          <select class="form-select form-select-sm" [(ngModel)]="item.unitType" [disabled]="isBulkSaving">
+                            <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input type="number" class="form-control form-control-sm text-center"
+                            [(ngModel)]="item.floor" [disabled]="isBulkSaving" />
+                        </td>
+                        <td>
+                          <input type="number" class="form-control form-control-sm text-center"
+                            [(ngModel)]="item.grossSquareMeters" placeholder="-" [disabled]="isBulkSaving" />
+                        </td>
+                        <td>
+                          <input type="number" class="form-control form-control-sm text-center"
+                            [(ngModel)]="item.netSquareMeters" placeholder="-" [disabled]="isBulkSaving" />
+                        </td>
+                        <td class="text-center">
+                          <button class="btn btn-sm btn-soft-danger p-0 px-2" (click)="removeBulkPreviewRow(i)" [disabled]="isBulkSaving" title="Satırı Çıkar">
+                            <i class="ri-delete-bin-line"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr *ngIf="bulkUnits.length === 0">
+                        <td colspan="7" class="text-center text-muted py-4">
+                          Önizlenecek daire bulunamadı. Lütfen sol taraftan adet giriniz.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light py-2 flex-column align-items-stretch">
+        <div *ngIf="bulkValidationError" class="alert alert-danger py-2 mb-2 text-center fs-13">
+          <i class="ri-error-warning-line me-1"></i> {{ bulkValidationError }}
+        </div>
+        <div *ngIf="bulkSuccessMessage" class="alert alert-success py-2 mb-2 text-center fs-13">
+          <i class="ri-checkbox-circle-line me-1"></i> {{ bulkSuccessMessage }}
+        </div>
+
+        <!-- İlerleme Çubuğu -->
+        <div *ngIf="isBulkSaving" class="w-100 my-2">
+          <div class="d-flex justify-content-between fs-12 mb-1">
+            <span><i class="ri-loader-4-line spinner-border spinner-border-sm me-1 text-primary"></i> Daireler kaydediliyor, lütfen bekleyiniz...</span>
+            <span class="fw-bold">{{ bulkProgress.current }} / {{ bulkProgress.total }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+              [style.width.%]="bulkProgress.total > 0 ? (bulkProgress.current / bulkProgress.total * 100) : 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-light" (click)="isBulkModalOpen = false" [disabled]="isBulkSaving">
+            Vazgeç
+          </button>
+          <button class="btn btn-success" (click)="saveBulkUnits()" [disabled]="isBulkSaving || bulkUnits.length === 0">
+            <i class="ri-check-double-line me-1" *ngIf="!isBulkSaving"></i>
+            <span class="spinner-border spinner-border-sm me-1" *ngIf="isBulkSaving" role="status"></span>
+            Toplu Oluştur ({{ bulkUnits.length }} Daire)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Silme Onay Modal -->
-<div class="modal fade show d-block" tabindex="-1" *ngIf="silmeOnayModal" style="background:rgba(0,0,0,0.5)">
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isDeleteModalOpen" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
       <div class="modal-body text-center p-4">
@@ -255,8 +573,275 @@
         <h5 class="mt-3">Birim Silinecek!</h5>
         <p class="text-muted">Bu bağımsız bölümü silmek istediğinize emin misiniz?</p>
         <div class="d-flex gap-2 justify-content-center">
-          <button class="btn btn-light" (click)="silmeOnayModal = false">İptal</button>
-          <button class="btn btn-danger" (click)="silmeOnayla2()">Evet, Sil</button>
+          <button class="btn btn-light" (click)="isDeleteModalOpen = false">İptal</button>
+          <button class="btn btn-danger" (click)="deleteUnit()">Evet, Sil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toplu Daire Düzenleme Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isBulkEditModalOpen" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-light py-3 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="avatar-xs me-2">
+            <span class="avatar-title rounded-circle bg-info-subtle text-info fs-16">
+              <i class="ri-edit-2-line"></i>
+            </span>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0 fw-bold">Toplu Bağımsız Bölüm (Daire) Düzenleme</h5>
+            <p class="text-muted fs-12 mb-0">Seçili {{ bulkEditUnits.length }} adet dairenin kat, tür, blok ve m² bilgilerini hızlıca güncelleyin.</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="isBulkEditModalOpen = false" [disabled]="isBulkEditSaving"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <!-- Hızlı Toplu Uygulama Araçları -->
+        <div class="card border mb-3">
+          <div class="card-header bg-light py-2">
+            <h6 class="card-title mb-0 fs-13 text-uppercase fw-semibold text-muted">
+              <i class="ri-flashlight-line me-1 text-warning"></i> Hızlı Toplu Uygulama Araçları
+            </h6>
+          </div>
+          <div class="card-body p-3">
+            <div class="row g-3">
+              <!-- Araç 1: Otomatik Kat Dağıtımı (Kullanıcının ana sorunu) -->
+              <div class="col-lg-6">
+                <div class="p-3 bg-light rounded border h-100">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ri-sort-asc text-primary fs-16 me-2"></i>
+                    <strong class="fs-13 text-dark">Kurala Göre Kat Dağıtımı Yap</strong>
+                  </div>
+                  <p class="text-muted fs-12 mb-2">Seçili daireleri kapı sırasına göre katlara eşit dağıtır.</p>
+                  <div class="row g-2 align-items-end">
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Başlangıç Katı</label>
+                      <input type="number" class="form-control form-control-sm" [(ngModel)]="bulkEditStartFloor" placeholder="Örn: 0, 1" />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Kat Başına Daire</label>
+                      <input type="number" class="form-control form-control-sm" min="1" [(ngModel)]="bulkEditUnitsPerFloor" placeholder="4" />
+                    </div>
+                    <div class="col-4">
+                      <button class="btn btn-sm btn-primary w-100" (click)="applyFloorDistributionToBulkEdit()">
+                        <i class="ri-magic-line me-1"></i> Katları Dağıt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Araç 2: Sabit Kata Taşı -->
+              <div class="col-lg-6">
+                <div class="p-3 bg-light rounded border h-100">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ri-building-line text-info fs-16 me-2"></i>
+                    <strong class="fs-13 text-dark">Tümünü Tek Bir Kata Taşı</strong>
+                  </div>
+                  <p class="text-muted fs-12 mb-2">Seçili tüm dairelerin katını tek tıkla aynı yapın (örn: Zemin kat).</p>
+                  <div class="row g-2 align-items-end">
+                    <div class="col-8">
+                      <label class="form-label fs-11 text-muted mb-1">Hedef Kat Numarası</label>
+                      <input type="number" class="form-control form-control-sm" [(ngModel)]="bulkEditTargetFloor" placeholder="Örn: 0, 1, 2" />
+                    </div>
+                    <div class="col-4">
+                      <button class="btn btn-sm btn-info text-white w-100" (click)="applyFloorToAllBulkEdit()">
+                        <i class="ri-check-line me-1"></i> Kata Taşı
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Araç 3: Birim Türü ve Blok Değiştirme -->
+              <div class="col-lg-6">
+                <div class="p-3 bg-light rounded border h-100">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ri-home-gear-line text-success fs-16 me-2"></i>
+                    <strong class="fs-13 text-dark">Toplu Tür & Blok Değiştir</strong>
+                  </div>
+                  <div class="row g-2 align-items-end">
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Birim Türü</label>
+                      <select class="form-select form-select-sm" [(ngModel)]="bulkEditTargetType">
+                        <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
+                      </select>
+                    </div>
+                    <div class="col-2">
+                      <button class="btn btn-sm btn-soft-success w-100" (click)="applyTypeToAllBulkEdit()" title="Seçilenlerin Türünü Güncelle">
+                        Uygula
+                      </button>
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Hedef Blok</label>
+                      <select class="form-select form-select-sm" [(ngModel)]="bulkEditTargetBlockId">
+                        <option *ngFor="let b of blocks" [value]="b.id">{{ b.blockName }}</option>
+                      </select>
+                    </div>
+                    <div class="col-2">
+                      <button class="btn btn-sm btn-soft-success w-100" (click)="applyBlockToAllBulkEdit()" title="Seçilenlerin Bloğunu Güncelle">
+                        Uygula
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Araç 4: m² Toplu Güncelleme -->
+              <div class="col-lg-6">
+                <div class="p-3 bg-light rounded border h-100">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ri-ruler-2-line text-secondary fs-16 me-2"></i>
+                    <strong class="fs-13 text-dark">Toplu Alan (m²) Bilgisi Ata</strong>
+                  </div>
+                  <div class="row g-2 align-items-end">
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Brüt m²</label>
+                      <input type="number" class="form-control form-control-sm" [(ngModel)]="bulkEditGrossM2" placeholder="110" />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label fs-11 text-muted mb-1">Net m²</label>
+                      <input type="number" class="form-control form-control-sm" [(ngModel)]="bulkEditNetM2" placeholder="85" />
+                    </div>
+                    <div class="col-4">
+                      <button class="btn btn-sm btn-soft-secondary w-100" (click)="applyM2ToAllBulkEdit()">
+                        <i class="ri-check-line me-1"></i> m² Uygula
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canlı Düzenleme Tablosu -->
+        <div class="card border mb-0">
+          <div class="card-header bg-light py-2 d-flex align-items-center justify-content-between">
+            <h6 class="card-title mb-0 fs-13 text-uppercase fw-semibold text-muted">
+              <i class="ri-table-line me-1 text-primary"></i> Düzenlenen Daireler Listesi (Canlı Tablo)
+            </h6>
+            <span class="badge bg-primary-subtle text-primary">{{ bulkEditUnits.length }} Daire</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+              <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th style="width: 40px;">#</th>
+                    <th style="width: 140px;">Kapı No <span class="text-danger">*</span></th>
+                    <th style="width: 140px;">Blok</th>
+                    <th style="width: 130px;">Tür</th>
+                    <th style="width: 100px;">Kat <span class="text-danger">*</span></th>
+                    <th style="width: 100px;">Brüt m²</th>
+                    <th style="width: 100px;">Net m²</th>
+                    <th style="width: 50px;" class="text-center">Kaldır</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of bulkEditUnits; let i = index">
+                    <td class="text-muted small">{{ i + 1 }}</td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm" [(ngModel)]="item.unitNumber" [disabled]="isBulkEditSaving" />
+                    </td>
+                    <td>
+                      <select class="form-select form-select-sm" [(ngModel)]="item.blockId" [disabled]="isBulkEditSaving">
+                        <option *ngFor="let b of blocks" [value]="b.id">{{ b.blockName }}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select class="form-select form-select-sm" [(ngModel)]="item.unitType" [disabled]="isBulkEditSaving">
+                        <option *ngFor="let t of UNIT_TYPES" [value]="t">{{ t }}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.floor" [disabled]="isBulkEditSaving" />
+                    </td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.grossSquareMeters" placeholder="-" [disabled]="isBulkEditSaving" />
+                    </td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.netSquareMeters" placeholder="-" [disabled]="isBulkEditSaving" />
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-soft-danger p-0 px-2" (click)="removeBulkEditRow(i)" [disabled]="isBulkEditSaving" title="Listeden Çıkar">
+                        <i class="ri-close-line"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="bulkEditUnits.length === 0">
+                    <td colspan="8" class="text-center text-muted py-4">Düzenlenecek daire bulunamadı.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light py-2 flex-column align-items-stretch">
+        <div *ngIf="bulkEditValidationError" class="alert alert-danger py-2 mb-2 text-center fs-13">
+          <i class="ri-error-warning-line me-1"></i> {{ bulkEditValidationError }}
+        </div>
+        <div *ngIf="bulkEditSuccessMessage" class="alert alert-success py-2 mb-2 text-center fs-13">
+          <i class="ri-checkbox-circle-line me-1"></i> {{ bulkEditSuccessMessage }}
+        </div>
+
+        <div *ngIf="isBulkEditSaving" class="w-100 my-2">
+          <div class="d-flex justify-content-between fs-12 mb-1">
+            <span><i class="ri-loader-4-line spinner-border spinner-border-sm me-1 text-primary"></i> Daireler güncelleniyor, lütfen bekleyiniz...</span>
+            <span class="fw-bold">{{ bulkEditProgress.current }} / {{ bulkEditProgress.total }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+              [style.width.%]="bulkEditProgress.total > 0 ? (bulkEditProgress.current / bulkEditProgress.total * 100) : 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-light" (click)="isBulkEditModalOpen = false" [disabled]="isBulkEditSaving">
+            Vazgeç
+          </button>
+          <button class="btn btn-primary" (click)="saveBulkEditUnits()" [disabled]="isBulkEditSaving || bulkEditUnits.length === 0">
+            <i class="ri-save-line me-1" *ngIf="!isBulkEditSaving"></i>
+            <span class="spinner-border spinner-border-sm me-1" *ngIf="isBulkEditSaving" role="status"></span>
+            Değişiklikleri Kaydet ({{ bulkEditUnits.length }} Daire)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toplu Silme Onay Modal -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isBulkDeleteModalOpen" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-body text-center p-4">
+        <div class="avatar-lg mx-auto mb-3">
+          <div class="avatar-title bg-danger-subtle text-danger rounded-circle fs-36">
+            <i class="ri-delete-bin-line"></i>
+          </div>
+        </div>
+        <h4 class="mb-2">{{ getSelectedCount() }} Bağımsız Bölüm Silinecek!</h4>
+        <p class="text-muted mb-4">
+          Seçtiğiniz <strong>{{ getSelectedCount() }}</strong> adet bağımsız bölüm kalıcı olarak silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button class="btn btn-light" (click)="isBulkDeleteModalOpen = false" [disabled]="isBulkDeleting">
+            Vazgeç
+          </button>
+          <button class="btn btn-danger" (click)="confirmBulkDelete()" [disabled]="isBulkDeleting">
+            <span class="spinner-border spinner-border-sm me-1" *ngIf="isBulkDeleting" role="status"></span>
+            <i class="ri-delete-bin-line me-1" *ngIf="!isBulkDeleting"></i>
+            Evet, Seçilenleri Sil ({{ getSelectedCount() }})
+          </button>
         </div>
       </div>
     </div>

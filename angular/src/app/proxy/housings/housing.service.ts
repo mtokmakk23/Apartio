@@ -1,4 +1,4 @@
-import type { BlockDto, CircleDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, CreateOrUpdateUnit, HousingDto, HousingTypeDto, UnitDto } from './models';
+import type { BlockDto, CircleDto, CreateBulkUnitsDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, CreateOrUpdateUnit, DeleteBulkUnitsDto, HousingDto, HousingTypeDto, UnitDto, UpdateBulkUnitsDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -42,6 +42,15 @@ export class HousingService {
       body: prop,
     },
     { apiName: this.apiName,...config });
+  
+
+  createBulkUnits = (prop: CreateBulkUnitsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/housing/bulk-units',
+      body: prop,
+    },
+    { apiName: this.apiName, skipHandleError: true, ...config });
   
 
   createUnit = (prop: CreateOrUpdateUnit, config?: Partial<Rest.Config>) =>
@@ -185,6 +194,22 @@ export class HousingService {
       body: prop,
     },
     { apiName: this.apiName,...config });
+
+  updateBulkUnits = (prop: UpdateBulkUnitsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/housing/bulk-units',
+      body: prop,
+    },
+    { apiName: this.apiName, skipHandleError: true, ...config });
+
+  deleteBulkUnits = (prop: DeleteBulkUnitsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: '/api/app/housing/bulk-units',
+      params: { UnitIds: prop?.unitIds },
+    },
+    { apiName: this.apiName, skipHandleError: true, ...config });
 
   constructor(private restService: RestService) {}
 }
