@@ -19,7 +19,7 @@
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
           <p class="text-muted mb-1">Toplam Site / Tesis</p>
-          <h3 class="mb-0">{{ apartmanlar.length }}</h3>
+          <h3 class="mb-0">{{ apartments.length }}</h3>
         </div>
         <div class="avatar-sm">
           <span class="avatar-title rounded-circle bg-primary-subtle text-primary fs-2">
@@ -54,12 +54,12 @@
                 <th>Site / Tesis Adı</th>
                 <th>Tür</th>
                 <th>Şehir / İlçe</th>
-                <th>Gecikme</th>
+                <th>Gecikme Faizi</th>
                 <th class="text-center" style="width: 220px;">İşlemler</th>
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let a of apartmanlar">
+              <ng-container *ngFor="let a of apartments">
                 <tr class="site-row" [class.table-light]="acikSiteler[a.id!]" (click)="toggleBlokAccordion(a)">
                   <td class="text-center py-2">
                     <i
@@ -76,10 +76,10 @@
                         </span>
                       </div>
                       <strong>{{ a.name }}</strong>
-                      <span *ngIf="bloklarMap[a.id!] !== undefined" class="badge bg-secondary-subtle text-secondary ms-1 fs-11">
-                        {{ bloklarMap[a.id!].length }} Blok
+                      <span *ngIf="bloksMap[a.id!] !== undefined" class="badge bg-secondary-subtle text-secondary ms-1 fs-11">
+                        {{ bloksMap[a.id!].length }} Blok
                       </span>
-                      <span *ngIf="bloklarMap[a.id!] === undefined" class="badge bg-light text-muted ms-1 fs-11">
+                      <span *ngIf="bloksMap[a.id!] === undefined" class="badge bg-light text-muted ms-1 fs-11">
                         <i class="ri-loader-4-line ri-spin"></i>
                       </span>
                     </div>
@@ -114,7 +114,7 @@
                             {{ a.name }} — Blok / Bina Listesi
                           </h6>
                           <span *ngIf="!blokYukleniyorMap[a.id!]" class="badge bg-warning-subtle text-warning">
-                            {{ (bloklarMap[a.id!] || []).length }} Blok
+                            {{ (bloksMap[a.id!] || []).length }} Blok
                           </span>
                         </div>
 
@@ -154,7 +154,7 @@
                             </tr>
                           </thead>
                           <tbody>
-                            <tr *ngFor="let blok of bloklarMap[a.id!]; let i = index">
+                            <tr *ngFor="let blok of bloksMap[a.id!]; let i = index">
                               <td class="text-center text-muted fs-12">{{ i + 1 }}</td>
                               <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -193,7 +193,7 @@
                                 </div>
                               </td>
                             </tr>
-                            <tr *ngIf="(bloklarMap[a.id!] || []).length === 0">
+                            <tr *ngIf="(bloksMap[a.id!] || []).length === 0">
                               <td colspan="5" class="text-center text-muted py-3 fst-italic fs-13">
                                 <i class="ri-information-line me-1 text-info"></i>Bu siteye henüz blok eklenmemiş. "Yeni Blok Ekle" butonunu kullanarak yeni blok ekleyebilirsiniz.
                               </td>
@@ -206,7 +206,7 @@
                 </tr>
               </ng-container>
 
-              <tr *ngIf="apartmanlar.length === 0">
+              <tr *ngIf="apartments.length === 0">
                 <td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı</td>
               </tr>
             </tbody>
@@ -244,22 +244,22 @@
                 <option *ngFor="let t of tipler" [ngValue]="t.id">{{ t.name }}</option>
               </ng-container>
               <ng-template #fallbackTipler>
-                <option *ngFor="let t of TIPLER" [ngValue]="t.value">{{ t.label }}</option>
+                <option *ngFor="let t of TYPES" [ngValue]="t.value">{{ t.label }}</option>
               </ng-template>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Şehir <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.city" (change)="sehirDegisti()">
+            <select class="form-select" [(ngModel)]="form.city" (change)="cityChanged()">
               <option value="">Seçiniz</option>
-              <option *ngFor="let s of sehirler" [value]="s.il">{{ s.il }}</option>
+              <option *ngFor="let s of cities" [value]="s.il">{{ s.il }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">İlçe <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="form.town" [disabled]="!form.city">
               <option value="">Seçiniz</option>
-              <option *ngFor="let i of ilceler" [value]="i">{{ i }}</option>
+              <option *ngFor="let i of districts" [value]="i">{{ i }}</option>
             </select>
           </div>
           <div class="col-md-8 mb-3">

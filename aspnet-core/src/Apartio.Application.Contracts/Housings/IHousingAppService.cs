@@ -18,7 +18,7 @@ public interface IHousingAppService : IApplicationService
 	Task UpdateBlockAsync(Guid id, CreateOrUpdateBlock prop);
 	Task CreateBlockAsync(CreateOrUpdateBlock prop);
 	Task DeleteBlock(Guid id);
-	Task<List<BlockDto>> GetBlockListAsync();
+	Task<List<BlockDto>> GetBlockListAsync(GetBlockListInput? input = null);
 
 	Task UpdateCircleAsync(Guid id, CreateOrUpdateCircle prop);
 	Task CreateCircleAsync(CreateOrUpdateCircle prop);

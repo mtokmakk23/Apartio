@@ -9,6 +9,12 @@ export enum HousingType {
   IsMerkezi = 6,
 }
 
+export interface GetBlockListInput {
+  housingId?: string;
+  housingIds?: string[];
+  housingIdList?: string;
+}
+
 export interface BlockDto extends EntityDto<string> {
   housingId?: string;
   blockName?: string;
