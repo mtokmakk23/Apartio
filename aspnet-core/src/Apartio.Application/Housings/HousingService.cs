@@ -173,12 +173,51 @@ public class HousingService(
         return _prop;
     }
 
-    public async Task<List<BlockDto>> GetBlockListAsync()
+    public async Task<List<BlockDto>> GetBlockListAsync(GetBlockListInput? input = null)
     {
+        var targetHousingIds = new List<Guid>();
+
+        if (input?.HousingIds is { Count: > 0 })
+        {
+            targetHousingIds.AddRange(input.HousingIds.Where(id => id != Guid.Empty));
+        }
+
+        if (!string.IsNullOrWhiteSpace(input?.HousingIdList))
+        {
+            foreach (var part in input.HousingIdList.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (Guid.TryParse(part, out var parsedGuid) && parsedGuid != Guid.Empty)
+                {
+                    targetHousingIds.Add(parsedGuid);
+                }
+            }
+        }
+
+        if (input?.HousingId is not null && input.HousingId.Value != Guid.Empty)
+        {
+            targetHousingIds.Add(input.HousingId.Value);
+        }
+
+        if (targetHousingIds.Count > 0)
+        {
+            var distinctIds = targetHousingIds.Distinct().ToList();
+            var blocks = await blockRepository.GetListAsync(x => distinctIds.Contains(x.HousingId));
+            return ObjectMapper.Map<List<Block>, List<BlockDto>>(blocks);
+        }
+
+        if (input?.HousingIds is { Count: 0 })
+        {
+            return [];
+        }
+
         var housing = await GetSelectedHousingAsync();
+        if (housing is null || housing.Id == Guid.Empty)
+        {
+            return [];
+        }
+
         return ObjectMapper.Map<List<Block>, List<BlockDto>>(await blockRepository.GetListAsync(x => x.HousingId == housing.Id));
     }
-
     public async Task DeleteBlock(Guid id)
     {
         var block = await blockRepository.GetAsync(id);

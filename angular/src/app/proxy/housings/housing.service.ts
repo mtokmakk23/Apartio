@@ -1,12 +1,14 @@
-import type { BlockDto, CircleDto, CreateBulkUnitsDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, CreateOrUpdateUnit, DeleteBulkUnitsDto, HousingDto, HousingTypeDto, UnitDto, UpdateBulkUnitsDto } from './models';
+import type { BlockDto, CircleDto, CreateBulkUnitsDto, CreateOrUpdateBlock, CreateOrUpdateCircle, CreateOrUpdateHousing, CreateOrUpdateUnit, DeleteBulkUnitsDto, GetBlockListInput, HousingDto, HousingTypeDto, UnitDto, UpdateBulkUnitsDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import { Observable, finalize, shareReplay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HousingService {
   apiName = 'Default';
+  private inFlightGetList$: Observable<HousingDto[]> | null = null;
   
 
   changeHousing = (housingId: string, config?: Partial<Rest.Config>) =>
@@ -104,10 +106,11 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  getBlockList = (config?: Partial<Rest.Config>) =>
+  getBlockList = (input?: GetBlockListInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, BlockDto[]>({
       method: 'GET',
       url: '/api/app/housing/block-list',
+      params: { housingId: input?.housingId, housingIds: input?.housingIds, housingIdList: input?.housingIdList },
     },
     { apiName: this.apiName,...config });
   
@@ -128,12 +131,22 @@ export class HousingService {
     { apiName: this.apiName,...config });
   
 
-  getList = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, HousingDto[]>({
+  getList = (config?: Partial<Rest.Config>): Observable<HousingDto[]> => {
+    if (this.inFlightGetList$) {
+      return this.inFlightGetList$;
+    }
+    this.inFlightGetList$ = this.restService.request<any, HousingDto[]>({
       method: 'GET',
       url: '/api/app/housing',
     },
-    { apiName: this.apiName,...config });
+    { apiName: this.apiName,...config }).pipe(
+      shareReplay(1),
+      finalize(() => {
+        this.inFlightGetList$ = null;
+      })
+    );
+    return this.inFlightGetList$;
+  };
   
 
   getSelectedHousing = (config?: Partial<Rest.Config>) =>

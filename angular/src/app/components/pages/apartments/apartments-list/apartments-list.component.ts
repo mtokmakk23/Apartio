@@ -10,7 +10,7 @@ import { EventService } from 'src/app/core/services/event.service';
   styleUrls: ['./apartments-list.component.scss'],
 })
 export class ApartmentsListComponent implements OnInit {
-  apartmanlar: HousingDto[] = [];
+  apartments: HousingDto[] = [];
   loading = false;
   showModal = false;
   seciliApartman: HousingDto | null = null;
@@ -32,7 +32,7 @@ export class ApartmentsListComponent implements OnInit {
 
   // Accordion & Blok Yönetimi
   acikSiteler: { [housingId: string]: boolean } = {};
-  bloklarMap: { [housingId: string]: BlockDto[] } = {};
+  bloksMap: { [housingId: string]: BlockDto[] } = {};
   blokYukleniyorMap: { [housingId: string]: boolean } = {};
   blokHataMap: { [housingId: string]: string } = {};
 
@@ -50,7 +50,7 @@ export class ApartmentsListComponent implements OnInit {
 
   tipler: HousingTypeDto[] = [];
   readonly HousingType = HousingType;
-  readonly TIPLER = [
+  readonly TYPES = [
     { value: HousingType.Site, label: 'Site' },
     { value: HousingType.Apartman, label: 'Apartman' },
     { value: HousingType.Rezidans, label: 'Rezidans' },
@@ -58,24 +58,24 @@ export class ApartmentsListComponent implements OnInit {
     { value: HousingType.MustakilEv, label: 'Müstakil Ev' },
     { value: HousingType.IsMerkezi, label: 'İş Merkezi / Plaza' },
   ];
-  readonly sehirler: TurkeyCity[] = TURKEY_CITIES;
-  ilceler: string[] = [];
+  readonly cities: TurkeyCity[] = TURKEY_CITIES;
+  districts: string[] = [];
 
   constructor(
     private housingService: HousingService,
     private eventService: EventService
   ) { }
 
-  sehirDegisti() {
-    const secili = this.sehirler.find(s => s.il === this.form.city);
-    this.ilceler = secili ? secili.ilceler : [];
+  cityChanged() {
+    const selected = this.cities.find(s => s.il === this.form.city);
+    this.districts = selected ? selected.ilceler : [];
     this.form.town = '';
   }
 
-  ilceleriniYukle(city?: string) {
-    if (!city) { this.ilceler = []; return; }
-    const secili = this.sehirler.find(s => s.il === city);
-    this.ilceler = secili ? secili.ilceler : [];
+  loadDistrict(city?: string) {
+    if (!city) { this.districts = []; return; }
+    const selected = this.cities.find(s => s.il === city);
+    this.districts = selected ? selected.ilceler : [];
   }
 
   async ngOnInit(): Promise<void> {
@@ -85,18 +85,17 @@ export class ApartmentsListComponent implements OnInit {
   async verileriYukle() {
     this.loading = true;
     try {
-      const [apartmanlar, tipler, secili] = await Promise.all([
+      const [apartmanlar, tipler] = await Promise.all([
         firstValueFrom(this.housingService.getList()),
         firstValueFrom(this.housingService.getHousingTypeList()).catch(() => []),
-        firstValueFrom(this.housingService.getSelectedHousing()).catch(() => null),
       ]);
-      this.apartmanlar = apartmanlar || [];
+      this.apartments = apartmanlar || [];
       if (tipler && tipler.length > 0) {
         this.tipler = tipler;
       }
 
-      // Başlangıçta tüm sitelerin bloklarını ve sayılarını çek
-      await this.tumSitelerinBloklariniYukle(secili?.id);
+      // Başlangıçta tüm sitelerin bloklarını tek seferde çek
+      await this.getAllBlocks();
     } catch {
       // ignore
     } finally {
@@ -104,19 +103,38 @@ export class ApartmentsListComponent implements OnInit {
     }
   }
 
-  async tumSitelerinBloklariniYukle(aktifHousingId?: string) {
-    for (const apt of this.apartmanlar) {
-      if (!apt.id) continue;
-      try {
-        await firstValueFrom(this.housingService.changeHousing(apt.id));
-        this.bloklarMap[apt.id] = await firstValueFrom(this.housingService.getBlockList());
-      } catch {
-        this.bloklarMap[apt.id] = [];
-      }
+  async getAllBlocks() {
+    const housingIds = this.apartments
+      .map(apt => apt.id)
+      .filter((id): id is string => !!id);
+
+    if (housingIds.length === 0) {
+      this.bloksMap = {};
+      return;
     }
-    // Kullanıcının orijinal aktif sitesini koru
-    if (aktifHousingId) {
-      await firstValueFrom(this.housingService.changeHousing(aktifHousingId)).catch(() => { });
+
+    try {
+      const allBlocks = await firstValueFrom(this.housingService.getBlockList({ housingIds }));
+      const newMap: { [housingId: string]: BlockDto[] } = {};
+      for (const apt of this.apartments) {
+        if (apt.id) {
+          newMap[apt.id] = [];
+        }
+      }
+      for (const block of allBlocks || []) {
+        if (block.housingId && newMap[block.housingId]) {
+          newMap[block.housingId].push(block);
+        }
+      }
+      this.bloksMap = newMap;
+    } catch {
+      const fallbackMap: { [housingId: string]: BlockDto[] } = {};
+      for (const apt of this.apartments) {
+        if (apt.id) {
+          fallbackMap[apt.id] = [];
+        }
+      }
+      this.bloksMap = fallbackMap;
     }
   }
 
@@ -124,7 +142,7 @@ export class ApartmentsListComponent implements OnInit {
     if (typeName) return typeName;
     const dynamic = this.tipler.find(t => t.id === type)?.name;
     if (dynamic) return dynamic;
-    return this.TIPLER.find(t => t.value === type)?.label ?? '—';
+    return this.TYPES.find(t => t.value === type)?.label ?? '—';
   }
 
   yeniApartman() {
@@ -144,7 +162,7 @@ export class ApartmentsListComponent implements OnInit {
     this.formVergiNo = (apartman as any).vergiNo || '';
     this.formSigortaNo = (apartman as any).sigortaNo || '';
     this.form = { ...apartman };
-    this.ilceleriniYukle(apartman.city);
+    this.loadDistrict(apartman.city);
     this.showModal = true;
   }
 
@@ -232,7 +250,7 @@ export class ApartmentsListComponent implements OnInit {
     if (!apartman.id) return;
     const id = apartman.id;
     this.acikSiteler[id] = !this.acikSiteler[id];
-    if (this.acikSiteler[id] && !this.bloklarMap[id]) {
+    if (this.acikSiteler[id] && !this.bloksMap[id]) {
       await this.siteBloklariniYukle(id);
     }
   }
@@ -241,8 +259,7 @@ export class ApartmentsListComponent implements OnInit {
     this.blokYukleniyorMap[housingId] = true;
     this.blokHataMap[housingId] = '';
     try {
-      await firstValueFrom(this.housingService.changeHousing(housingId));
-      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
+      this.bloksMap[housingId] = await firstValueFrom(this.housingService.getBlockList({ housingId }));
     } catch (err: any) {
       this.blokHataMap[housingId] = err.error?.error?.message || 'Bloklar yüklenirken bir hata oluştu.';
     } finally {
@@ -300,7 +317,7 @@ export class ApartmentsListComponent implements OnInit {
       } else {
         await firstValueFrom(this.housingService.createBlock(prop));
       }
-      this.bloklarMap[this.selectedBlockHousingId] = await firstValueFrom(this.housingService.getBlockList());
+      this.bloksMap[this.selectedBlockHousingId] = await firstValueFrom(this.housingService.getBlockList({ housingId: this.selectedBlockHousingId }));
       this.showBlockModal = false;
     } catch (err: any) {
       this.blockFormError = err.error?.error?.message || (this.selectedBlockId ? 'Blok güncellenirken bir hata oluştu.' : 'Blok eklenirken bir hata oluştu.');
@@ -317,8 +334,7 @@ export class ApartmentsListComponent implements OnInit {
     if (!confirm('Bu bloğu silmek istediğinize emin misiniz?')) return;
     try {
       await firstValueFrom(this.housingService.deleteBlockById(blokId));
-      await firstValueFrom(this.housingService.changeHousing(housingId));
-      this.bloklarMap[housingId] = await firstValueFrom(this.housingService.getBlockList());
+      this.bloksMap[housingId] = await firstValueFrom(this.housingService.getBlockList({ housingId }));
     } catch {
       // ignore
     }
